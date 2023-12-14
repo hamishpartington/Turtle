@@ -3,6 +3,7 @@
 #include <math.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdbool.h>
 
 #define LONGEST_WORD 20
 
@@ -22,3 +23,42 @@ typedef struct program program;
 //Stolen from Neill (https://github.com/csnwc/ADTs/blob/main/General/general.c)
 void* neill_calloc(int n, size_t size);
 
+bool prog_free(program* start);
+
+void prog(program** prog);
+
+void inlist(program** prog);
+
+void ins(program** prog);
+
+void fwd(program** prog);
+
+void rgt(program** prog);
+
+void col(program** prog);
+
+void loop(program** prog);
+
+void ltr(program** prog);
+
+void var(program** prog);
+
+void lst(program** prog);
+
+void items(program** prog);
+
+void item(program** prog);
+
+void varnum(program** prog);
+
+void num(program** prog);
+
+void set(program** prog);
+
+void pfix(program** prog);
+
+void word(program** prog);
+
+bool isop(program** prog);
+
+void op(program** prog);
