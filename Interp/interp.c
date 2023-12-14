@@ -1,9 +1,9 @@
-#include "parse.h"
+#include "interp.h"
 
 int main (int argc, char** argv)
 {
-    if(argc != 2){
-        fprintf(stderr, "Usage: %s <input file>\n", argv[0]);
+    if(argc < MIN_ARGS || argc > MAX_ARGS){
+        fprintf(stderr, "Usage: %s <input file> (<output_file>)", argv[0]);
         exit(EXIT_FAILURE);
     }
 

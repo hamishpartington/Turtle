@@ -6,6 +6,8 @@
 #include <stdbool.h>
 
 #define LONGEST_WORD 20
+#define MIN_ARGS 2
+#define MAX_ARGS 3
 
 #define strsame(A, B) (strcmp(A, B) == 0)
 #define ERROR(PHRASE) { fprintf(stderr, \

@@ -2,7 +2,7 @@
 
 int main (int argc, char** argv)
 {
-    if(argc != 2){
+    if(argc != NUM_ARGS){
         fprintf(stderr, "Usage: %s <input file>\n", argv[0]);
         exit(EXIT_FAILURE);
     }
