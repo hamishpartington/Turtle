@@ -17,17 +17,17 @@ int main (int argc, char** argv)
         p = p->next;
     }
     p = start;
-    prog(&p);
 
-
-    printf("Parses OK\n");
+    bool pass = prog(&p);
 
     prog_free(start);
-    
 
     fclose(f);
 
-    return EXIT_SUCCESS;
+    if(pass){
+        return EXIT_SUCCESS;
+    }
+    return EXIT_FAILURE;
 }
 
 void* neill_calloc(int n, size_t size)
@@ -59,185 +59,202 @@ bool prog_free(program* start)
     return true;
 }
 
-void prog(program** prog)
+bool prog(program** prog)
 {
     if(!strsame((*prog)->word, "START")){
         ERROR("No START statement");
-        return; 
+        return false; 
     }
     *prog = (*prog)->next;
-    inlist(prog);
+    return inlist(prog);
 }
 
-void inlist(program** prog)
+bool inlist(program** prog)
 {
     if(strsame((*prog)->word, "END")){
-        return;
+        return true;
     }
-    ins(prog);
+    if(!ins(prog)){
+        return false;
+    }
     *prog = (*prog)->next;
-    inlist(prog);
+    return inlist(prog);
 }
 
-void ins(program** prog)
+bool ins(program** prog)
 {
     if(strsame((*prog)->word, "FORWARD")){
-        fwd(prog);
+        return fwd(prog);
     }else if(strsame((*prog)->word, "RIGHT")){
-        rgt(prog);
+        return rgt(prog);
     }else if(strsame((*prog)->word, "COLOUR")){
-        col(prog);
+        return col(prog);
     }else if(strsame((*prog)->word, "LOOP")){
-        loop(prog);
+        return loop(prog);
     }else if(strsame((*prog)->word, "SET")){
-        set(prog);
+        return set(prog);
     }else{
         ERROR("Expecting INS");
-        return;
+        return false;
     }
+
 }
 
-void fwd(program** prog)
+bool fwd(program** prog)
 {
     *prog = (*prog)->next;
-    varnum(prog);
+    return varnum(prog);
 }
 
-void rgt(program** prog)
+bool rgt(program** prog)
 {
     *prog = (*prog)->next;
-    varnum(prog);
+    return varnum(prog);
 }
 
-void col(program** prog)
+bool col(program** prog)
 {
     *prog = (*prog)->next;
     if((*prog)->word[0] == '$'){
-        var(prog);
+        return var(prog);
     }else if((*prog)->word[0] == '"'){
-        word(prog);
+        return word(prog);
     }else{
         ERROR("Expecting COL");
+        return false;
     }
 }
 
-void loop(program** prog)
+bool loop(program** prog)
 {
     *prog = (*prog)->next;
-    ltr(prog);
+    if(!ltr(prog)){
+        return false;
+    }
     *prog = (*prog)->next;
     if(!strsame((*prog)->word, "OVER")){
         ERROR("Expecting OVER");
-        return;
+        return false;
     }
     *prog = (*prog)->next;
-    lst(prog);
+    if(!lst(prog)){
+        return false;
+    }
     *prog = (*prog)->next;
-    inlist(prog);
+    return inlist(prog);
 }
 
-void var(program** prog)
+bool var(program** prog)
 {
     if((*prog)->word[0] != '$'){
         ERROR("Expecting VAR");
-        return;
+        return false;
     }
-    ltr(prog);
+    return ltr(prog);
 
 }
 
-void ltr(program** prog)
+bool ltr(program** prog)
 {
     if((*prog)->word[0] == '$'){
         if(!isupper((*prog)->word[1])){
             ERROR("Expecting LTR");
-            return;
+            return false;
         }
     }else{
         if(!isupper((*prog)->word[0])){
             ERROR("Expecting LTR");
-            return;
+            return false;
         }
     }
-
-
+    return true;
 }
 
-void lst(program** prog)
+bool lst(program** prog)
 {
     if(!strsame((*prog)->word, "{")){
         ERROR("Expecting { for LST");
-        return;
+        return false;
     }
     *prog = (*prog)->next;
-    items(prog);
+    return items(prog);
 }
 
-void items(program** prog)
+bool items(program** prog)
 {
     if(strsame((*prog)->word, "}")){
-        return;
+        return true;
     }
-    item(prog);
+    if(!item(prog)){
+        return false;
+    }
     *prog = (*prog)->next;
-    items(prog);
+    return items(prog);
 }
 
-void item(program** prog)
+bool item(program** prog)
 {
     if((*prog)->word[0] == '"'){
-        word(prog);
+        return word(prog);
     }else{
-        varnum(prog);
+        return varnum(prog);
     }
 }
 
-void varnum(program** prog)
+bool varnum(program** prog)
 {
     if((*prog)->word[0] == '$'){
-        var(prog);
+        return var(prog);
     }else if(isdigit((*prog)->word[0]) || (*prog)->word[0] == '-'){
-        num(prog);
+        return num(prog);
     }else{
         ERROR("Expecting VARNUM");
-        return;
+        return false;
     }
 }
 
-void num(program** prog)
+bool num(program** prog)
 {
     double n;
 
     if(sscanf((*prog)->word, "%lf", &n) != 1){
         ERROR("Expecting NUM");
-        return;
+        return false;
     }
+
+    return true;
 }
 
-void set(program** prog)
+bool set(program** prog)
 {
     *prog = (*prog)->next;
-    ltr(prog);
+    if(!ltr(prog)){
+        return false;
+    }
     *prog = (*prog)->next;
     if(!strsame((*prog)->word, "(")){
         ERROR("Expecting SET");
-        return;
+        return false;
     }
     *prog = (*prog)->next;
-    pfix(prog);
+    return pfix(prog);
 }
 
-void pfix(program** prog)
+bool pfix(program** prog)
 {
     if(strsame((*prog)->word,")")){
-        return;
+        return true;
     }else if(isop(prog)){
-        op(prog);
+        if(!op(prog)){
+            return false;
+        }
     }else{
-        varnum(prog);
+        if(!varnum(prog)){
+            return false;
+        }
     }
     *prog = (*prog)->next;
-    pfix(prog);
+    return pfix(prog);
 }
 
 bool isop(program** prog)
@@ -254,20 +271,23 @@ bool isop(program** prog)
     return false;
 }
 
-void op(program** prog)
+bool op(program** prog)
 {
     if(!isop(prog)){
         ERROR("Expecting OP");
-        return;
+        return false;
     }
+    return true;
 }
 
-void word(program** prog)
+bool word(program** prog)
 {
-    if((*prog)->word[0] != '"'){
+    int len = strlen((*prog)->word);
+    if((*prog)->word[0] != '"' || (*prog)->word[(len - 1)] != '"'){
         ERROR("Expecting WORD");
-        return;
+        return false;
     }
+    return true;
 }
 
 

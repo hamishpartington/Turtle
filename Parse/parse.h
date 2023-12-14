@@ -25,40 +25,40 @@ void* neill_calloc(int n, size_t size);
 
 bool prog_free(program* start);
 
-void prog(program** prog);
+bool prog(program** prog);
 
-void inlist(program** prog);
+bool inlist(program** prog);
 
-void ins(program** prog);
+bool ins(program** prog);
 
-void fwd(program** prog);
+bool fwd(program** prog);
 
-void rgt(program** prog);
+bool rgt(program** prog);
 
-void col(program** prog);
+bool col(program** prog);
 
-void loop(program** prog);
+bool loop(program** prog);
 
-void ltr(program** prog);
+bool ltr(program** prog);
 
-void var(program** prog);
+bool var(program** prog);
 
-void lst(program** prog);
+bool lst(program** prog);
 
-void items(program** prog);
+bool items(program** prog);
 
-void item(program** prog);
+bool item(program** prog);
 
-void varnum(program** prog);
+bool varnum(program** prog);
 
-void num(program** prog);
+bool num(program** prog);
 
-void set(program** prog);
+bool set(program** prog);
 
-void pfix(program** prog);
+bool pfix(program** prog);
 
-void word(program** prog);
+bool word(program** prog);
 
 bool isop(program** prog);
 
-void op(program** prog);
+bool op(program** prog);
