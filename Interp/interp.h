@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -8,6 +10,13 @@
 #define LONGEST_WORD 20
 #define MIN_ARGS 2
 #define MAX_ARGS 3
+#define WIDTH 51
+#define HEIGHT 33
+#define START_ROW 17
+#define START_COLUMN 26
+#define PI 3.14159265
+#define SEMI_CIRC 180
+
 
 #define strsame(A, B) (strcmp(A, B) == 0)
 #define ERROR(PHRASE) { fprintf(stderr, \
@@ -18,6 +27,12 @@
 struct program {
     char word[LONGEST_WORD];
     struct program* next;
+    struct program* previous;
+    bool write;
+    int row;
+    int column;
+    char colour;
+    double facing;
 };
 
 typedef struct program program;
@@ -64,3 +79,7 @@ bool word(program** prog);
 bool isop(program** prog);
 
 bool op(program** prog);
+
+void set_values(program** prog, bool write, int row, int column, char colour, double facing);
+
+void set_prev_values(program** prog);

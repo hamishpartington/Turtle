@@ -8,13 +8,16 @@ int main (int argc, char** argv)
     }
 
     FILE* f = fopen(argv[1], "r");
-    program *start, *p;
+    program *start, *p, *previous;
     start = (program*)neill_calloc(1, sizeof(program));
     p = start;
 
     while(fscanf(f, "%s", p->word) != EOF){
+        previous = p;
         p->next = (program*)neill_calloc(1, sizeof(program));
         p = p->next;
+        p->previous = previous;
+
     }
     p = start;
 
@@ -65,6 +68,7 @@ bool prog(program** prog)
         ERROR("No START statement");
         return false; 
     }
+    set_values(prog, false, START_ROW, START_COLUMN, 'W', PI/2);
     *prog = (*prog)->next;
     return inlist(prog);
 }
@@ -72,6 +76,7 @@ bool prog(program** prog)
 bool inlist(program** prog)
 {
     if(strsame((*prog)->word, "END")){
+        set_prev_values(prog);
         return true;
     }
     if(!ins(prog)){
@@ -290,6 +295,30 @@ bool word(program** prog)
     return true;
 }
 
+void set_values(program** prog, bool write, int row, int column, char colour, double facing)
+{
+    (*prog)->colour = colour;
+    (*prog)->column = column;
+    (*prog)->row = row;
+    (*prog)->write = write;
+    (*prog)->facing = facing;
+}
+
+void set_prev_values(program** prog)
+{
+    (*prog)->colour = (*prog)->previous->colour;
+    (*prog)->column = (*prog)->previous->column;
+    (*prog)->row = (*prog)->previous->row;
+    (*prog)->write = false;
+    (*prog)->facing = (*prog)->previous->facing;
+}
+
+double deg_to_radians(double deg)
+{
+    double rad = deg*PI/SEMI_CIRC;
+
+    return rad;
+}
 
 
 
