@@ -19,17 +19,22 @@ int main (int argc, char** argv)
         p->previous = previous;
 
     }
+    
+    turtle* t, *t_start = init_turtle();
+
+    t = t_start;
     p = start;
 
-    bool pass = prog(&p);
+    bool pass = prog(&p, &t);
 
     char array[HEIGHT][WIDTH] = {{'\0'}};
 
-    prog_to_array(start, array);
+    turtle_to_array(t_start, array);
 
     print_array(array);
 
     prog_free(start);
+    turtle_free(t_start);
 
     fclose(f);
 
@@ -68,42 +73,59 @@ bool prog_free(program* start)
     return true;
 }
 
-bool prog(program** prog)
+bool turtle_free(turtle* start)
+{
+    if(!start){
+        return false;
+    }
+
+    turtle *temp;
+
+    while(start->next){
+        temp = start->next;
+        free(start);
+        start = temp;
+    }
+
+    free(start);
+
+    return true;
+}
+
+bool prog(program** prog, turtle** t)
 {
     if(!strsame((*prog)->word, "START")){
         ERROR("No START statement");
         return false; 
     }
-    set_values(prog, false, START_ROW, START_COLUMN, 'W', PI/2);
     *prog = (*prog)->next;
-    return inlist(prog);
+    return inlist(prog, t);
 }
 
-bool inlist(program** prog)
+bool inlist(program** prog, turtle** t)
 {
     if(strsame((*prog)->word, "END")){
-        set_prev_values(prog);
         return true;
     }
-    if(!ins(prog)){
+    if(!ins(prog, t)){
         return false;
     }
     *prog = (*prog)->next;
-    return inlist(prog);
+    return inlist(prog, t);
 }
 
-bool ins(program** prog)
+bool ins(program** prog, turtle** t)
 {
     if(strsame((*prog)->word, "FORWARD")){
-        return fwd(prog);
+        return fwd(prog, t);
     }else if(strsame((*prog)->word, "RIGHT")){
-        return rgt(prog);
+        return rgt(prog, t);
     }else if(strsame((*prog)->word, "COLOUR")){
-        return col(prog);
+        return col(prog, t);
     }else if(strsame((*prog)->word, "LOOP")){
-        return loop(prog);
+        return loop(prog, t);
     }else if(strsame((*prog)->word, "SET")){
-        return set(prog);
+        return set(prog, t);
     }else{
         ERROR("Expecting INS");
         return false;
@@ -111,37 +133,35 @@ bool ins(program** prog)
 
 }
 
-bool fwd(program** prog)
+bool fwd(program** prog, turtle** t)
 {  
-    set_prev_values(prog);
     *prog = (*prog)->next;
-    return varnum(prog);
+    return varnum(prog, t);
 }
 
-bool rgt(program** prog)
+bool rgt(program** prog, turtle** t)
 {
-    set_prev_values(prog);
     *prog = (*prog)->next;
-    return varnum(prog);
+    return varnum(prog, t);
 }
 
-bool col(program** prog)
+bool col(program** prog, turtle** t)
 {
     *prog = (*prog)->next;
     if((*prog)->word[0] == '$'){
-        return var(prog);
+        return var(prog, t);
     }else if((*prog)->word[0] == '"'){
-        return word(prog);
+        return word(prog, t);
     }else{
         ERROR("Expecting COL");
         return false;
     }
 }
 
-bool loop(program** prog)
+bool loop(program** prog, turtle** t)
 {
     *prog = (*prog)->next;
-    if(!ltr(prog)){
+    if(!ltr(prog, t)){
         return false;
     }
     *prog = (*prog)->next;
@@ -150,24 +170,24 @@ bool loop(program** prog)
         return false;
     }
     *prog = (*prog)->next;
-    if(!lst(prog)){
+    if(!lst(prog, t)){
         return false;
     }
     *prog = (*prog)->next;
-    return inlist(prog);
+    return inlist(prog, t);
 }
 
-bool var(program** prog)
+bool var(program** prog, turtle** t)
 {
     if((*prog)->word[0] != '$'){
         ERROR("Expecting VAR");
         return false;
     }
-    return ltr(prog);
+    return ltr(prog, t);
 
 }
 
-bool ltr(program** prog)
+bool ltr(program** prog, turtle** t)
 {
     if((*prog)->word[0] == '$'){
         if(!isupper((*prog)->word[1])){
@@ -183,50 +203,56 @@ bool ltr(program** prog)
     return true;
 }
 
-bool lst(program** prog)
+bool lst(program** prog, turtle** t)
 {
     if(!strsame((*prog)->word, "{")){
         ERROR("Expecting { for LST");
         return false;
     }
     *prog = (*prog)->next;
-    return items(prog);
+    // counter for loop members,
+    static int i = 0;
+    return items(prog, t, i);
 }
 
-bool items(program** prog)
+bool items(program** prog, turtle** t, int i)
 {
     if(strsame((*prog)->word, "}")){
         return true;
     }
-    if(!item(prog)){
+    //static int i = 0;
+    
+    printf("static = %i\n", i);
+    if(!item(prog, t)){
         return false;
     }
+    i++;
     *prog = (*prog)->next;
-    return items(prog);
+    return items(prog, t, i);
 }
 
-bool item(program** prog)
+bool item(program** prog, turtle** t)
 {
     if((*prog)->word[0] == '"'){
-        return word(prog);
+        return word(prog, t);
     }else{
-        return varnum(prog);
+        return varnum(prog, t);
     }
 }
 
-bool varnum(program** prog)
+bool varnum(program** prog, turtle** t)
 {
     if((*prog)->word[0] == '$'){
-        return var(prog);
+        return var(prog, t);
     }else if(isdigit((*prog)->word[0]) || (*prog)->word[0] == '-'){
-        return num(prog);
+        return num(prog, t);
     }else{
         ERROR("Expecting VARNUM");
         return false;
     }
 }
 
-bool num(program** prog)
+bool num(program** prog, turtle** t)
 {
     double n, rad = 0;
 
@@ -235,25 +261,26 @@ bool num(program** prog)
         return false;
     }
 
-    set_prev_values(prog);
-
     if((*prog)->previous->word[0] == 'R'){
         rad = deg_to_radians(n);
-        (*prog)->facing = (*prog)->previous->facing + rad;
-        (*prog)->facing = facing_adjust((*prog)->facing);
+        advance_turtle(t);
+        set_prev_values(t);
+        (*t)->facing = (*t)->previous->facing + rad;
+        (*t)->facing = facing_adjust((*t)->facing);
     }else if((*prog)->previous->word[0] == 'F'){
-        (*prog)->facing = (*prog)->previous->facing;
-        (*prog)->row = new_row(*prog, n);
-        (*prog)->column = new_column(*prog, n);
+        advance_turtle(t);
+        set_prev_values(t);
+        (*t)->row= new_row(*t, n);
+        (*t)->column = new_column(*t, n);
     }
 
     return true;
 }
 
-bool set(program** prog)
+bool set(program** prog, turtle** t)
 {
     *prog = (*prog)->next;
-    if(!ltr(prog)){
+    if(!ltr(prog, t)){
         return false;
     }
     *prog = (*prog)->next;
@@ -262,24 +289,24 @@ bool set(program** prog)
         return false;
     }
     *prog = (*prog)->next;
-    return pfix(prog);
+    return pfix(prog, t);
 }
 
-bool pfix(program** prog)
+bool pfix(program** prog, turtle** t)
 {
     if(strsame((*prog)->word,")")){
         return true;
     }else if(isop(prog)){
-        if(!op(prog)){
+        if(!op(prog, t)){
             return false;
         }
     }else{
-        if(!varnum(prog)){
+        if(!varnum(prog, t)){
             return false;
         }
     }
     *prog = (*prog)->next;
-    return pfix(prog);
+    return pfix(prog, t);
 }
 
 bool isop(program** prog)
@@ -296,7 +323,7 @@ bool isop(program** prog)
     return false;
 }
 
-bool op(program** prog)
+bool op(program** prog, turtle** t)
 {
     if(!isop(prog)){
         ERROR("Expecting OP");
@@ -305,7 +332,7 @@ bool op(program** prog)
     return true;
 }
 
-bool word(program** prog)
+bool word(program** prog, turtle** t)
 {
     int len = strlen((*prog)->word);
     if((*prog)->word[0] != '"' || (*prog)->word[(len - 1)] != '"'){
@@ -315,22 +342,30 @@ bool word(program** prog)
     return true;
 }
 
-void set_values(program** prog, bool write, int row, int column, char colour, double facing)
-{
-    (*prog)->colour = colour;
-    (*prog)->column = column;
-    (*prog)->row = row;
-    (*prog)->write = write;
-    (*prog)->facing = facing;
+void set_values(turtle** t, int row, int column, char colour, double facing)
+{   
+    (*t)->colour = colour;
+    (*t)->column = column;
+    (*t)->row = row;
+    (*t)->facing = facing;
+
 }
 
-void set_prev_values(program** prog)
+void set_prev_values(turtle** t)
 {
-    (*prog)->colour = (*prog)->previous->colour;
-    (*prog)->column = (*prog)->previous->column;
-    (*prog)->row = (*prog)->previous->row;
-    (*prog)->write = false;
-    (*prog)->facing = (*prog)->previous->facing;
+    (*t)->colour = (*t)->previous->colour;
+    (*t)->column = (*t)->previous->column;
+    (*t)->row = (*t)->previous->row;
+    (*t)->facing = (*t)->previous->facing;
+
+}
+
+void advance_turtle(turtle** t)
+{
+    turtle* prev = *t;
+    (*t)->next = (turtle*)neill_calloc(1, sizeof(turtle));
+    (*t) = (*t)->next;
+    (*t)->previous = prev;
 }
 
 double deg_to_radians(double deg)
@@ -352,33 +387,33 @@ double facing_adjust(double facing)
     return facing;
 }
 
-int new_row(program* prog, double n)
+int new_row(turtle* t, double n)
 {
     int new_row;
-    if(prog->facing <= PI/2){
-        new_row = prog->previous->row - (int)opposite(n, prog->facing);
-    }else if(prog->facing <= PI){
-        new_row = prog->previous->row - (int)adjacent(n, (prog->facing - PI/2));
-    }else if(prog->facing <= 1.5 * PI){
-        new_row = prog->previous->row + (int)opposite(n, (prog->facing - PI));
+    if(t->facing <= PI/2){
+        new_row = t->previous->row - (int)opposite(n, t->facing);
+    }else if(t->facing <= PI){
+        new_row = t->previous->row - (int)adjacent(n, (t->facing - PI/2));
+    }else if(t->facing <= 1.5 * PI){
+        new_row = t->previous->row + (int)opposite(n, (t->facing - PI));
     }else{
-        new_row = prog->previous->row + (int)adjacent(n, (prog->facing - 1.5*PI));
+        new_row = t->previous->row + (int)adjacent(n, (t->facing - 1.5*PI));
     }
 
     return new_row;
 }
 
-int new_column(program* prog, double n)
+int new_column(turtle* t, double n)
 {
     int new_col;
-    if(prog->facing <= PI/2){
-        new_col = prog->previous->column - (int)adjacent(n, prog->facing);
-    }else if(prog->facing <= PI){
-        new_col = prog->previous->column + (int)opposite(n, (prog->facing - PI/2));
-    }else if(prog->facing <= 1.5 * PI){
-        new_col = prog->previous->column + (int)adjacent(n, (prog->facing - PI));
+    if(t->facing <= PI/2){
+        new_col = t->previous->column - (int)adjacent(n, t->facing);
+    }else if(t->facing <= PI){
+        new_col = t->previous->column + (int)opposite(n, (t->facing - PI/2));
+    }else if(t->facing <= 1.5 * PI){
+        new_col = t->previous->column + (int)adjacent(n, (t->facing - PI));
     }else{
-        new_col = prog->previous->column - (int)opposite(n, (prog->facing - 1.5*PI));
+        new_col = t->previous->column - (int)opposite(n, (t->facing - 1.5*PI));
     }
 
     return new_col;
@@ -402,13 +437,13 @@ double adjacent(int hypotenuse, double theta)
     return round(adjacent);
 }
 
-void prog_to_array(program* prog, char array[HEIGHT][WIDTH])
+void turtle_to_array(turtle* t, char array[HEIGHT][WIDTH])
 {
     
-    while(prog){        
-        array[prog->row][prog->column] = prog->colour;
-        printf("row = %i, column = %i\n", prog->row, prog->column);
-        prog = prog->next;
+    while(t->next){        
+        array[t->row][t->column] = t->colour;
+        printf("row = %i, column = %i\n", t->row, t->column);
+        t = t->next;
     }
 }
 
@@ -427,7 +462,15 @@ void print_array(char array[HEIGHT][WIDTH])
     }
 }
 
+turtle* init_turtle(void){
+    turtle* t = (turtle*)neill_calloc(1, sizeof(turtle));
+    t->colour = 'W';
+    t->column = START_COLUMN;
+    t->facing = PI/2;
+    t->row = START_ROW;
 
+    return t;
+}
 
 
 
