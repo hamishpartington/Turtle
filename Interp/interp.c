@@ -23,6 +23,12 @@ int main (int argc, char** argv)
 
     bool pass = prog(&p);
 
+    char array[HEIGHT][WIDTH] = {{'\0'}};
+
+    prog_to_array(start, array);
+
+    print_array(array);
+
     prog_free(start);
 
     fclose(f);
@@ -106,13 +112,15 @@ bool ins(program** prog)
 }
 
 bool fwd(program** prog)
-{
+{  
+    set_prev_values(prog);
     *prog = (*prog)->next;
     return varnum(prog);
 }
 
 bool rgt(program** prog)
 {
+    set_prev_values(prog);
     *prog = (*prog)->next;
     return varnum(prog);
 }
@@ -220,11 +228,23 @@ bool varnum(program** prog)
 
 bool num(program** prog)
 {
-    double n;
+    double n, rad = 0;
 
     if(sscanf((*prog)->word, "%lf", &n) != 1){
         ERROR("Expecting NUM");
         return false;
+    }
+
+    set_prev_values(prog);
+
+    if((*prog)->previous->word[0] == 'R'){
+        rad = deg_to_radians(n);
+        (*prog)->facing = (*prog)->previous->facing + rad;
+        (*prog)->facing = facing_adjust((*prog)->facing);
+    }else if((*prog)->previous->word[0] == 'F'){
+        (*prog)->facing = (*prog)->previous->facing;
+        (*prog)->row = new_row(*prog, n);
+        (*prog)->column = new_column(*prog, n);
     }
 
     return true;
@@ -320,9 +340,92 @@ double deg_to_radians(double deg)
     return rad;
 }
 
+double facing_adjust(double facing)
+{
+    if(facing > (2*PI)){
+        facing = facing - (2*PI);
+    }
+    if(facing < 0 ){
+        facing = facing + (2*PI);
+    }
 
+    return facing;
+}
 
+int new_row(program* prog, double n)
+{
+    int new_row;
+    if(prog->facing <= PI/2){
+        new_row = prog->previous->row - (int)opposite(n, prog->facing);
+    }else if(prog->facing <= PI){
+        new_row = prog->previous->row - (int)adjacent(n, (prog->facing - PI/2));
+    }else if(prog->facing <= 1.5 * PI){
+        new_row = prog->previous->row + (int)opposite(n, (prog->facing - PI));
+    }else{
+        new_row = prog->previous->row + (int)adjacent(n, (prog->facing - 1.5*PI));
+    }
 
+    return new_row;
+}
+
+int new_column(program* prog, double n)
+{
+    int new_col;
+    if(prog->facing <= PI/2){
+        new_col = prog->previous->column - (int)adjacent(n, prog->facing);
+    }else if(prog->facing <= PI){
+        new_col = prog->previous->column + (int)opposite(n, (prog->facing - PI/2));
+    }else if(prog->facing <= 1.5 * PI){
+        new_col = prog->previous->column + (int)adjacent(n, (prog->facing - PI));
+    }else{
+        new_col = prog->previous->column - (int)opposite(n, (prog->facing - 1.5*PI));
+    }
+
+    return new_col;
+}
+
+double opposite(int hypotenuse, double theta)
+{
+    double opposite;
+
+    opposite = sin(theta) * hypotenuse;
+
+    return round(opposite);
+}
+
+double adjacent(int hypotenuse, double theta)
+{
+    double adjacent;
+
+    adjacent = cos(theta) * hypotenuse;
+
+    return round(adjacent);
+}
+
+void prog_to_array(program* prog, char array[HEIGHT][WIDTH])
+{
+    
+    while(prog){        
+        array[prog->row][prog->column] = prog->colour;
+        printf("row = %i, column = %i\n", prog->row, prog->column);
+        prog = prog->next;
+    }
+}
+
+void print_array(char array[HEIGHT][WIDTH])
+{
+    for(int i = 0; i < HEIGHT; i++){
+        for(int j = 0; j < WIDTH; j++){
+
+            if(array[i][j] == '\0'){
+                printf(" ");
+            }else{
+                printf("%c", array[i][j]);
+            }
+        }
+        printf("\n");
+    }
+}
 
 
 

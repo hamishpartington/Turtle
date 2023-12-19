@@ -83,3 +83,19 @@ bool op(program** prog);
 void set_values(program** prog, bool write, int row, int column, char colour, double facing);
 
 void set_prev_values(program** prog);
+
+double deg_to_radians(double deg);
+
+double facing_adjust(double facing);
+
+int new_row(program* prog, double n);
+
+int new_column(program* prog, double n);
+
+double opposite(int hypotenuse, double theta);
+
+double adjacent(int hypotenuse, double theta);
+
+void prog_to_array(program* prog, char array[HEIGHT][WIDTH]);
+
+void print_array(char array[HEIGHT][WIDTH]);
