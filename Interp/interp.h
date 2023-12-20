@@ -121,3 +121,5 @@ bool set_var(char var, char val[MAX_PFIX], turtle** t);
 void calc_pfix(char result[MAX_PFIX], char v1[MAX_PFIX], char v2[MAX_PFIX], char op);
 
 void var_get(char var[LONGEST_WORD], turtle** t);
+
+bool set_col(turtle** t, char word[LONGEST_WORD], bool is_var);

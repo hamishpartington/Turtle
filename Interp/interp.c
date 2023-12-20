@@ -139,8 +139,10 @@ bool col(program** prog, turtle** t)
 {
     *prog = (*prog)->next;
     if((*prog)->word[0] == '$'){
+        set_col(t, (*prog)->word, true);
         return var(prog, t);
     }else if((*prog)->word[0] == '"'){
+        set_col(t, (*prog)->word, false);
         return word(prog, t);
     }else{
         ERROR("Expecting COL");
@@ -533,3 +535,36 @@ void var_get(char var[LONGEST_WORD], turtle** t)
     strcpy(var, (*t)->variables[row]);
 }
 
+bool set_col(turtle** t, char word[LONGEST_WORD], bool is_var){
+    
+    char colour[LONGEST_WORD];
+
+    if(is_var){
+        int row = word[1] - ASCII_A;
+        strcpy((*t)->variables[row], colour);
+    }else{
+        strcpy(word, colour);
+    }
+
+    if(strsame(colour, "\"RED\"")){
+        (*t)->colour = 'R';
+    }else if(strsame(colour, "\"CYAN\"")){
+        (*t)->colour = 'C';
+    }else if(strsame(colour, "\"GREEN\"")){
+        (*t)->colour = 'G';
+    }else if(strsame(colour, "\"BLUE\"")){
+        (*t)->colour = 'B';
+    }else if(strsame(colour, "\"YELLOW\"")){
+        (*t)->colour = 'Y';
+    }else if(strsame(colour, "\"MAGENTA\"")){
+        (*t)->colour = 'M';
+    }else if(strsame(colour, "\"BLACK\"")){
+        (*t)->colour = 'K';
+    }else if(strsame(colour, "\"WHITE\"")){
+        (*t)->colour = 'W';
+    }else{
+        fprintf(stderr, "%s is not a valid colour\n", colour);
+        exit(EXIT_FAILURE);
+    }
+    return true;
+}
