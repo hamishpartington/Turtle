@@ -70,9 +70,9 @@ bool ltr(program** prog, turtle** t);
 
 bool var(program** prog, turtle** t);
 
-bool lst(program** prog, turtle** t);
+bool lst(program** prog, turtle** t, char loop_var_list[MAX_LOOPS][LONGEST_WORD]);
 
-bool items(program** prog, turtle** t, int i);
+bool items(program** prog, turtle** t, int i, char loop_var_list[MAX_LOOPS][LONGEST_WORD]);
 
 bool item(program** prog, turtle** t);
 

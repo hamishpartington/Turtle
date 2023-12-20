@@ -156,17 +156,28 @@ bool loop(program** prog, turtle** t)
     if(!ltr(prog, t)){
         return false;
     }
+    char loop_var = (*prog)->word[0];
     *prog = (*prog)->next;
     if(!strsame((*prog)->word, "OVER")){
         ERROR("Expecting OVER");
         return false;
     }
     *prog = (*prog)->next;
-    if(!lst(prog, t)){
+    char loop_var_list[MAX_LOOPS][LONGEST_WORD] = {{'\0'}};
+    
+    if(!lst(prog, t, loop_var_list)){
         return false;
     }
     *prog = (*prog)->next;
-    return inlist(prog, t);
+    program* loop_start = *prog;
+    bool pass;
+    for(int i = 0; loop_var_list[i][0] != '\0'; i++){
+        *prog = loop_start;
+        set_var(loop_var, loop_var_list[i], t);
+        pass = inlist(prog, t);
+    }
+    
+    return pass;
 }
 
 bool var(program** prog, turtle** t)
@@ -175,6 +186,26 @@ bool var(program** prog, turtle** t)
         ERROR("Expecting VAR");
         return false;
     }
+
+    char var[LONGEST_WORD];
+    strcpy(var, (*prog)->word);
+    var_get(var, t);
+
+    double rad, n = atof(var);
+
+    if((*prog)->previous->word[0] == 'R'){
+        rad = deg_to_radians(n);
+        advance_turtle(t);
+        set_prev_values(t);
+        (*t)->facing = (*t)->previous->facing + rad;
+        (*t)->facing = facing_adjust((*t)->facing);
+    }else if((*prog)->previous->word[0] == 'F'){
+        advance_turtle(t);
+        set_prev_values(t);
+        (*t)->row = new_row(*t, n);
+        (*t)->column = new_column(*t, n);
+    }
+
     return ltr(prog, t);
 
 }
@@ -195,32 +226,34 @@ bool ltr(program** prog, turtle** t)
     return true;
 }
 
-bool lst(program** prog, turtle** t)
+bool lst(program** prog, turtle** t, char loop_var_list[MAX_LOOPS][LONGEST_WORD])
 {
     if(!strsame((*prog)->word, "{")){
         ERROR("Expecting { for LST");
         return false;
     }
-    *prog = (*prog)->next;
-    // counter for loop members,
     static int i = 0;
-    return items(prog, t, i);
+    *prog = (*prog)->next;
+    return items(prog, t, i, loop_var_list);
 }
 
-bool items(program** prog, turtle** t, int i)
+bool items(program** prog, turtle** t, int i, char loop_var_list[MAX_LOOPS][LONGEST_WORD])
 {
     if(strsame((*prog)->word, "}")){
         return true;
     }
-    //static int i = 0;
     
-    printf("i = %i\nword = %s\n", i, (*prog)->word);
     if(!item(prog, t)){
         return false;
     }
+    if((*prog)->word[0] == '$'){
+        strcpy(loop_var_list[i], (*t)->variables[((*prog)->word[1] - ASCII_A)]);
+    }else{
+        strcpy(loop_var_list[i], (*prog)->word);
+    }    
     i++;
     *prog = (*prog)->next;
-    return items(prog, t, i);
+    return items(prog, t, i, loop_var_list);
 }
 
 bool item(program** prog, turtle** t)
@@ -262,7 +295,7 @@ bool num(program** prog, turtle** t)
     }else if((*prog)->previous->word[0] == 'F'){
         advance_turtle(t);
         set_prev_values(t);
-        (*t)->row= new_row(*t, n);
+        (*t)->row = new_row(*t, n);
         (*t)->column = new_column(*t, n);
     }
 
@@ -289,8 +322,6 @@ bool set(program** prog, turtle** t)
     stack_free(pfix_stack);
 
     set_var(var, val, t);
-
-    printf("%c = %s\n", var, (*t)->variables[(var-ASCII_A)]);
     
     return pass;
 }
@@ -460,7 +491,6 @@ void turtle_to_array(turtle* t, char array[HEIGHT][WIDTH])
     
     while(t->next){        
         array[t->row][t->column] = t->colour;
-        printf("row = %i, column = %i\n", t->row, t->column);
         t = t->next;
     }
 }
@@ -541,9 +571,9 @@ bool set_col(turtle** t, char word[LONGEST_WORD], bool is_var){
 
     if(is_var){
         int row = word[1] - ASCII_A;
-        strcpy((*t)->variables[row], colour);
+        strcpy(colour, (*t)->variables[row]);
     }else{
-        strcpy(word, colour);
+        strcpy(colour, word);
     }
 
     if(strsame(colour, "\"RED\"")){
