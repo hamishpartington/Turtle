@@ -3,7 +3,7 @@
 int main (int argc, char** argv)
 {
     if(argc < MIN_ARGS || argc > MAX_ARGS){
-        fprintf(stderr, "Usage: %s <input file> (<output_file>)", argv[0]);
+        fprintf(stderr, "Usage: %s <input file> (<output_file>)\n", argv[0]);
         exit(EXIT_FAILURE);
     }
 
@@ -42,16 +42,6 @@ int main (int argc, char** argv)
         return EXIT_SUCCESS;
     }
     return EXIT_FAILURE;
-}
-
-void* neill_calloc(int n, size_t size)
-{
-   void* v = calloc(n, size);
-   if(v==NULL){
-    fprintf(stderr, "Cannot calloc() space\n");
-    exit(EXIT_FAILURE);
-   }
-   return v;
 }
 
 bool prog_free(program* start)
@@ -222,7 +212,7 @@ bool items(program** prog, turtle** t, int i)
     }
     //static int i = 0;
     
-    printf("static = %i\n", i);
+    printf("i = %i\nword = %s\n", i, (*prog)->word);
     if(!item(prog, t)){
         return false;
     }
@@ -283,30 +273,53 @@ bool set(program** prog, turtle** t)
     if(!ltr(prog, t)){
         return false;
     }
+    char var = (*prog)->word[0];
     *prog = (*prog)->next;
     if(!strsame((*prog)->word, "(")){
         ERROR("Expecting SET");
         return false;
     }
     *prog = (*prog)->next;
-    return pfix(prog, t);
+    stack* pfix_stack = stack_init();
+    bool pass = pfix(prog, t, pfix_stack);
+    char val[MAX_PFIX];
+    stack_pop(pfix_stack, val);
+    stack_free(pfix_stack);
+
+    set_var(var, val, t);
+
+    printf("%c = %s\n", var, (*t)->variables[(var-ASCII_A)]);
+    
+    return pass;
 }
 
-bool pfix(program** prog, turtle** t)
+bool pfix(program** prog, turtle** t, stack* pfix_stack)
 {
+    char result[MAX_PFIX], v1[MAX_PFIX] = {'\0'}, v2[MAX_PFIX] = {'\0'};
     if(strsame((*prog)->word,")")){
         return true;
     }else if(isop(prog)){
         if(!op(prog, t)){
             return false;
         }
+        stack_pop(pfix_stack, v2);
+        stack_pop(pfix_stack, v1);
+        if(v1[0] == '$'){
+            var_get(v1, t);
+        }
+        if(v2[0] == '$'){
+            var_get(v2, t);
+        }
+        calc_pfix(result, v1, v2, (*prog)->word[0]);
+        stack_push(pfix_stack, result);
     }else{
         if(!varnum(prog, t)){
             return false;
         }
+        stack_push(pfix_stack, (*prog)->word);
     }
     *prog = (*prog)->next;
-    return pfix(prog, t);
+    return pfix(prog, t, pfix_stack);
 }
 
 bool isop(program** prog)
@@ -357,6 +370,9 @@ void set_prev_values(turtle** t)
     (*t)->column = (*t)->previous->column;
     (*t)->row = (*t)->previous->row;
     (*t)->facing = (*t)->previous->facing;
+    for(int i = 0; i < LETTERS; i++){
+        strcpy((*t)->variables[i], (*t)->previous->variables[i]);
+    }
 
 }
 
@@ -472,8 +488,48 @@ turtle* init_turtle(void){
     return t;
 }
 
+bool set_var(char var, char val[MAX_PFIX], turtle** t)
+{
+    if(!t || !(*t)){
+        return false;
+    }
+    int row = var - ASCII_A;
+    strcpy((*t)->variables[row], val);
+    return true;
+}
 
+void calc_pfix(char result[MAX_PFIX], char v1[MAX_PFIX], char v2[MAX_PFIX], char op)
+{
+    double x1, x2, res_int;
 
+    x1 = atof(v1);
+    x2 = atof(v2);
 
+    switch(op){
+        case '+':
+            res_int = x1 + x2;
+            break;
+        case '-':
+            res_int = x1 - x2;
+            break;
+        case '/':
+            res_int = x1 / x2;
+            break;
+        case '*':
+            res_int = x1 * x2;
+            break;
+        default:
+               fprintf(stderr, "Can't understand that ? %c\n", op);
+               exit(EXIT_FAILURE);
+    }
+    sprintf(result, "%lf", res_int);
 
+}
+
+void var_get(char var[LONGEST_WORD], turtle** t)
+{
+    int row = var[1] - ASCII_A;
+
+    strcpy(var, (*t)->variables[row]);
+}
 

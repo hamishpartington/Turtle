@@ -6,6 +6,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include "./Stack/stack.h"
 
 #define LONGEST_WORD 20
 #define MAX_LOOPS 50
@@ -17,6 +18,8 @@
 #define START_COLUMN 26
 #define PI 3.14159265
 #define SEMI_CIRC 180
+#define LETTERS 26
+#define ASCII_A 65
 
 
 #define strsame(A, B) (strcmp(A, B) == 0)
@@ -36,6 +39,7 @@ struct turtle {
     int column;
     char colour;
     double facing;
+    char variables[LETTERS][LONGEST_WORD];
     struct turtle* next;
     struct turtle* previous;
 };
@@ -44,7 +48,7 @@ typedef struct program program;
 typedef struct turtle turtle;
 
 //Stolen from Neill (https://github.com/csnwc/ADTs/blob/main/General/general.c)
-void* neill_calloc(int n, size_t size);
+
 
 bool prog_free(program* start);
 
@@ -78,7 +82,7 @@ bool num(program** prog, turtle** t);
 
 bool set(program** prog, turtle** t);
 
-bool pfix(program** prog, turtle** t);
+bool pfix(program** prog, turtle** t, stack* pfix_stack);
 
 bool word(program** prog, turtle** t);
 
@@ -111,3 +115,9 @@ void advance_turtle(turtle** t);
 turtle* init_turtle(void);
 
 bool turtle_free(turtle* start);
+
+bool set_var(char var, char val[MAX_PFIX], turtle** t);
+
+void calc_pfix(char result[MAX_PFIX], char v1[MAX_PFIX], char v2[MAX_PFIX], char op);
+
+void var_get(char var[LONGEST_WORD], turtle** t);
