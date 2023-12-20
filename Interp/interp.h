@@ -13,8 +13,8 @@
 #define MIN_ARGS 2
 #define MAX_ARGS 3
 #define WIDTH 51
-#define HEIGHT 33
-#define START_ROW 17
+#define HEIGHT 41
+#define START_ROW 21
 #define START_COLUMN 26
 #define PI 3.14159265
 #define SEMI_CIRC 180
@@ -123,3 +123,5 @@ void calc_pfix(char result[MAX_PFIX], char v1[MAX_PFIX], char v2[MAX_PFIX], char
 void var_get(char var[LONGEST_WORD], turtle** t);
 
 bool set_col(turtle** t, char word[LONGEST_WORD], bool is_var);
+
+void line_draw(char array[HEIGHT][WIDTH], double sx, double sy, double ex, double ey, char colour);

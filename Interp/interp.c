@@ -488,9 +488,14 @@ double adjacent(int hypotenuse, double theta)
 
 void turtle_to_array(turtle* t, char array[HEIGHT][WIDTH])
 {
-    
+    double sx, sy, ex, ey;
     while(t->next){        
         array[t->row][t->column] = t->colour;
+        sy = t->row;
+        ey = t->next->row;
+        sx = t->column;
+        ex = t->next->column;
+        line_draw(array, sx, sy, ex, ey, t->colour);
         t = t->next;
     }
 }
@@ -597,4 +602,24 @@ bool set_col(turtle** t, char word[LONGEST_WORD], bool is_var){
         exit(EXIT_FAILURE);
     }
     return true;
+}
+
+void line_draw(char array[HEIGHT][WIDTH], double sx, double sy, double ex, double ey, char colour)
+{
+    double dx, dy, dist, distdy, distdx, nx, ny;
+
+    dx = ex - sx;
+    dy = ey - sy;
+    dist = sqrt((pow(dx, 2) + pow(dy, 2)));
+    distdx = dx/dist;
+    distdy = dy/dist;
+
+    if(dist > 0){
+        for(int i = 1; i < (int)round(dist); i++){
+            nx = round(sx + (distdx*i));
+            ny = round(sy + (distdy*i));
+            //printf("nx = %i, ny = %i\n", (int)nx, (int)ny);
+            array[(int)ny][(int)nx] = colour;
+        }
+    }
 }
