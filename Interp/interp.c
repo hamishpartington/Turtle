@@ -151,7 +151,7 @@ bool col(program** prog, turtle** t)
         return var(prog, t);
     }else if((*prog)->word[0] == '"'){
         set_col(t, (*prog)->word, false);
-        return word(prog, t);
+        return word(prog);
     }else{
         ERROR("Expecting COL");
         return false;
@@ -161,7 +161,7 @@ bool col(program** prog, turtle** t)
 bool loop(program** prog, turtle** t)
 {
     *prog = (*prog)->next;
-    if(!ltr(prog, t)){
+    if(!ltr(prog)){
         return false;
     }
     char loop_var = (*prog)->word[0];
@@ -214,11 +214,11 @@ bool var(program** prog, turtle** t)
         (*t)->column = new_column(*t, n);
     }
 
-    return ltr(prog, t);
+    return ltr(prog);
 
 }
 
-bool ltr(program** prog, turtle** t)
+bool ltr(program** prog)
 {
     if((*prog)->word[0] == '$'){
         if(!isupper((*prog)->word[1])){
@@ -267,7 +267,7 @@ bool items(program** prog, turtle** t, int i, char loop_var_list[MAX_LOOPS][LONG
 bool item(program** prog, turtle** t)
 {
     if((*prog)->word[0] == '"'){
-        return word(prog, t);
+        return word(prog);
     }else{
         return varnum(prog, t);
     }
@@ -313,7 +313,7 @@ bool num(program** prog, turtle** t)
 bool set(program** prog, turtle** t)
 {
     *prog = (*prog)->next;
-    if(!ltr(prog, t)){
+    if(!ltr(prog)){
         return false;
     }
     char var = (*prog)->word[0];
@@ -340,7 +340,7 @@ bool pfix(program** prog, turtle** t, stack* pfix_stack)
     if(strsame((*prog)->word,")")){
         return true;
     }else if(isop(prog)){
-        if(!op(prog, t)){
+        if(!op(prog)){
             return false;
         }
         stack_pop(pfix_stack, v2);
@@ -377,7 +377,7 @@ bool isop(program** prog)
     return false;
 }
 
-bool op(program** prog, turtle** t)
+bool op(program** prog)
 {
     if(!isop(prog)){
         ERROR("Expecting OP");
@@ -386,7 +386,7 @@ bool op(program** prog, turtle** t)
     return true;
 }
 
-bool word(program** prog, turtle** t)
+bool word(program** prog)
 {
     int len = strlen((*prog)->word);
     if((*prog)->word[0] != '"' || (*prog)->word[(len - 1)] != '"'){
@@ -497,8 +497,10 @@ double adjacent(int hypotenuse, double theta)
 void turtle_to_array(turtle* t, char array[HEIGHT][WIDTH])
 {
     double sx, sy, ex, ey;
-    while(t->next){        
-        array[t->row][t->column] = t->colour;
+    while(t->next){      
+        if(t->row < HEIGHT && t->row >= 0 && t->column < WIDTH && t->column >= 0){
+            array[t->row][t->column] = t->colour;
+        }
         sy = t->row;
         ey = t->next->row;
         sx = t->column;
@@ -641,7 +643,9 @@ void line_draw(char array[HEIGHT][WIDTH], double sx, double sy, double ex, doubl
         for(int i = 1; i < (int)round(dist); i++){
             nx = round(sx + (distdx*i));
             ny = round(sy + (distdy*i));
-            array[(int)ny][(int)nx] = colour;
+            if((int)ny < HEIGHT && (int)ny >= 0 && (int)nx < WIDTH && (int)nx >= 0){
+                array[(int)ny][(int)nx] = colour;
+            }
         }
     }
 }

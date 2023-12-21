@@ -13,7 +13,7 @@
 #define MIN_ARGS 2
 #define MAX_ARGS 3
 #define WIDTH 51
-#define HEIGHT 36
+#define HEIGHT 33
 #define START_ROW (HEIGHT/2)
 #define START_COLUMN (WIDTH/2)
 #define PI 3.14159265
@@ -67,7 +67,7 @@ bool col(program** prog, turtle** t);
 
 bool loop(program** prog, turtle** t);
 
-bool ltr(program** prog, turtle** t);
+bool ltr(program** prog);
 
 bool var(program** prog, turtle** t);
 
@@ -85,11 +85,11 @@ bool set(program** prog, turtle** t);
 
 bool pfix(program** prog, turtle** t, stack* pfix_stack);
 
-bool word(program** prog, turtle** t);
+bool word(program** prog);
 
 bool isop(program** prog);
 
-bool op(program** prog, turtle** t);
+bool op(program** prog);
 
 void set_values(turtle** t, int row, int column, char colour, double facing);
 

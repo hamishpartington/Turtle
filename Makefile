@@ -66,4 +66,4 @@ run: all
 	# ./interp_s TTLs/downarrow.ttl out_downarrow.ps
 
 clean:
-	rm -f parse_s interp_s out_*.txt out_*.ps out_*.pdf
+	rm -f parse_s interp_s Results/out_*.txt Results/out_*.ps Results/out_*.pdf
