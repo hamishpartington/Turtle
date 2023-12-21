@@ -13,13 +13,14 @@
 #define MIN_ARGS 2
 #define MAX_ARGS 3
 #define WIDTH 51
-#define HEIGHT 41
-#define START_ROW 21
-#define START_COLUMN 26
+#define HEIGHT 36
+#define START_ROW (HEIGHT/2)
+#define START_COLUMN (WIDTH/2)
 #define PI 3.14159265
 #define SEMI_CIRC 180
 #define LETTERS 26
 #define ASCII_A 65
+#define OUT_FILE_ARG 2
 
 
 #define strsame(A, B) (strcmp(A, B) == 0)
@@ -108,7 +109,9 @@ double adjacent(int hypotenuse, double theta);
 
 void turtle_to_array(turtle* t, char array[HEIGHT][WIDTH]);
 
-void print_array(char array[HEIGHT][WIDTH]);
+void print_to_console(char array[HEIGHT][WIDTH]);
+
+void print_to_file(char array[HEIGHT][WIDTH], FILE* out_file);
 
 void advance_turtle(turtle** t);
 

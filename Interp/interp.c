@@ -31,7 +31,15 @@ int main (int argc, char** argv)
 
     turtle_to_array(t_start, array);
 
-    print_array(array);
+    if(argc == MIN_ARGS){
+        print_to_console(array);
+    }else{
+        char out_dir[100] = {'\0'};
+        strcpy(out_dir, "Results/");
+        FILE* out_file = fopen(strcat(out_dir, argv[OUT_FILE_ARG]), "w+");
+        print_to_file(array, out_file);
+        fclose(out_file);
+    }
 
     prog_free(start);
     turtle_free(t_start);
@@ -500,7 +508,22 @@ void turtle_to_array(turtle* t, char array[HEIGHT][WIDTH])
     }
 }
 
-void print_array(char array[HEIGHT][WIDTH])
+void print_to_file(char array[HEIGHT][WIDTH], FILE* out_file)
+{
+    for(int i = 0; i < HEIGHT; i++){
+        for(int j = 0; j < WIDTH; j++){
+
+            if(array[i][j] == '\0'){
+                fprintf(out_file, " ");
+            }else{
+                fprintf(out_file, "%c", array[i][j]);
+            }
+        }
+        fprintf(out_file, "\n");
+    }
+}
+
+void print_to_console(char array[HEIGHT][WIDTH])
 {
     for(int i = 0; i < HEIGHT; i++){
         for(int j = 0; j < WIDTH; j++){
@@ -618,7 +641,6 @@ void line_draw(char array[HEIGHT][WIDTH], double sx, double sy, double ex, doubl
         for(int i = 1; i < (int)round(dist); i++){
             nx = round(sx + (distdx*i));
             ny = round(sy + (distdy*i));
-            //printf("nx = %i, ny = %i\n", (int)nx, (int)ny);
             array[(int)ny][(int)nx] = colour;
         }
     }
