@@ -1,4 +1,5 @@
 #include "interp.h"
+#include "../neillsimplescreen.h"
 
 int main (int argc, char** argv)
 {
@@ -533,10 +534,45 @@ void print_to_console(char array[HEIGHT][WIDTH])
             if(array[i][j] == '\0'){
                 printf(" ");
             }else{
+                change_col(array[i][j]);
                 printf("%c", array[i][j]);
+                //neillbusywait(1);
             }
         }
         printf("\n");
+    }
+}
+
+void change_col(char c)
+{
+    switch (c)
+    {
+    case 'K':
+        neillfgcol(black);
+        break;
+    case 'R':
+        neillfgcol(red);
+        break;
+    case 'G':
+        neillfgcol(green);
+        break;
+    case 'Y':
+        neillfgcol(yellow);
+        break;
+    case 'B':
+        neillfgcol(blue);
+        break;
+    case 'M':
+        neillfgcol(magenta);
+        break;
+    case 'C':
+        neillfgcol(cyan);
+        break;
+    case 'W':
+        neillfgcol(white);
+        break;
+    default:
+        break;
     }
 }
 

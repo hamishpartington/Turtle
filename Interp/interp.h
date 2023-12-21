@@ -128,3 +128,5 @@ void var_get(char var[LONGEST_WORD], turtle** t);
 bool set_col(turtle** t, char word[LONGEST_WORD], bool is_var);
 
 void line_draw(char array[HEIGHT][WIDTH], double sx, double sy, double ex, double ey, char colour);
+
+void change_col(char c);
