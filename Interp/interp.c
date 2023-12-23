@@ -624,11 +624,17 @@ void calc_pfix(char result[MAX_PFIX], char v1[MAX_PFIX], char v2[MAX_PFIX], char
 
 }
 
-void var_get(char var[LONGEST_WORD], turtle** t)
+bool var_get(char var[LONGEST_WORD], turtle** t)
 {
     int row = var[1] - ASCII_A;
 
+    if((*t)->variables[row][0] == '\0'){
+        ERROR("Attempting to access unassigned variable\n");
+        return false;
+    }
+
     strcpy(var, (*t)->variables[row]);
+    return true;
 }
 
 bool set_col(turtle** t, char word[LONGEST_WORD], bool is_var){
