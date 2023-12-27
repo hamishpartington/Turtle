@@ -35,11 +35,32 @@ int main (int argc, char** argv)
     if(argc == MIN_ARGS){
         print_to_console(array);
     }else{
-        char out_dir[100] = {'\0'};
+        char out_dir[MAX_DIR] = {'\0'};
         strcpy(out_dir, "Results/");
+
+        char file_ext[MAX_EXT] = {'\0'};
+        get_file_ext(argv[OUT_FILE_ARG], file_ext);
+
         FILE* out_file = fopen(strcat(out_dir, argv[OUT_FILE_ARG]), "w+");
-        print_to_file(array, out_file);
-        fclose(out_file);
+
+        if(strsame(file_ext, "txt")){
+            print_to_file(array, out_file);
+            fclose(out_file);
+        }else if(strsame(file_ext, "ps")){
+            turtle_to_ps(t_start, out_file);
+            fclose(out_file);
+            char system_command[MAX_DIR] = {'\0'};
+            strcat(system_command, "ps2pdf ");
+            strcat(system_command, out_dir);
+            strcat(system_command, " ");
+            ps_to_pdf(out_dir);
+            strcat(system_command, out_dir);
+            system(system_command);
+        }else{
+            fprintf(stderr, "%s is not a valid output file type\n", file_ext);
+            pass = false;
+            fclose(out_file);
+        }       
     }
 
     prog_free(start);
@@ -213,6 +234,8 @@ bool var(program** prog, turtle** t)
         set_prev_values(t);
         (*t)->row = new_row(*t, n);
         (*t)->column = new_column(*t, n);
+        (*t)->ps_x = new_ps_x(*t, n);
+        (*t)->ps_y = new_ps_y(*t, n);
     }
 
     return ltr(prog);
@@ -306,6 +329,8 @@ bool num(program** prog, turtle** t)
         set_prev_values(t);
         (*t)->row = new_row(*t, n);
         (*t)->column = new_column(*t, n);
+        (*t)->ps_x = new_ps_x(*t, n);
+        (*t)->ps_y = new_ps_y(*t, n);
     }
 
     return true;
@@ -397,21 +422,14 @@ bool word(program** prog)
     return true;
 }
 
-void set_values(turtle** t, int row, int column, char colour, double facing)
-{   
-    (*t)->colour = colour;
-    (*t)->column = column;
-    (*t)->row = row;
-    (*t)->facing = facing;
-
-}
-
 void set_prev_values(turtle** t)
 {
     (*t)->colour = (*t)->previous->colour;
     (*t)->column = (*t)->previous->column;
     (*t)->row = (*t)->previous->row;
     (*t)->facing = (*t)->previous->facing;
+    (*t)->ps_x = (*t)->previous->ps_x;
+    (*t)->ps_y = (*t)->previous->ps_y;
     for(int i = 0; i < LETTERS; i++){
         strcpy((*t)->variables[i], (*t)->previous->variables[i]);
     }
@@ -449,13 +467,13 @@ int new_row(turtle* t, double n)
 {
     int new_row;
     if(t->facing <= PI/2){
-        new_row = t->previous->row - (int)opposite(n, t->facing);
+        new_row = t->previous->row + (int)round(opposite(n, t->facing));
     }else if(t->facing <= PI){
-        new_row = t->previous->row - (int)adjacent(n, (t->facing - PI/2));
+        new_row = t->previous->row + (int)round(adjacent(n, (t->facing - PI/2)));
     }else if(t->facing <= 1.5 * PI){
-        new_row = t->previous->row + (int)opposite(n, (t->facing - PI));
+        new_row = t->previous->row - (int)round(opposite(n, (t->facing - PI)));
     }else{
-        new_row = t->previous->row + (int)adjacent(n, (t->facing - 1.5*PI));
+        new_row = t->previous->row - (int)round(adjacent(n, (t->facing - 1.5*PI)));
     }
 
     return new_row;
@@ -465,34 +483,67 @@ int new_column(turtle* t, double n)
 {
     int new_col;
     if(t->facing <= PI/2){
-        new_col = t->previous->column - (int)adjacent(n, t->facing);
+        new_col = t->previous->column - (int)round(adjacent(n, t->facing));
     }else if(t->facing <= PI){
-        new_col = t->previous->column + (int)opposite(n, (t->facing - PI/2));
+        new_col = t->previous->column + (int)round(opposite(n, (t->facing - PI/2)));
     }else if(t->facing <= 1.5 * PI){
-        new_col = t->previous->column + (int)adjacent(n, (t->facing - PI));
+        new_col = t->previous->column + (int)round(adjacent(n, (t->facing - PI)));
     }else{
-        new_col = t->previous->column - (int)opposite(n, (t->facing - 1.5*PI));
+        new_col = t->previous->column - (int)round(opposite(n, (t->facing - 1.5*PI)));
     }
 
     return new_col;
 }
 
-double opposite(int hypotenuse, double theta)
+double new_ps_y(turtle* t, double n)
+{
+    double new_ps_y;
+    if(t->facing <= PI/2){
+        new_ps_y = t->previous->ps_y + opposite(n, t->facing);
+    }else if(t->facing <= PI){
+        new_ps_y = t->previous->ps_y + adjacent(n, (t->facing - PI/2));
+    }else if(t->facing <= 1.5 * PI){
+        new_ps_y = t->previous->ps_y - opposite(n, (t->facing - PI));
+    }else{
+        new_ps_y = t->previous->ps_y - adjacent(n, (t->facing - 1.5*PI));
+    }
+
+    return new_ps_y;
+}
+
+double new_ps_x(turtle* t, double n)
+{
+    double new_ps_x;
+    if(t->facing <= PI/2){
+        new_ps_x = t->previous->ps_x - adjacent(n, t->facing);
+    }else if(t->facing <= PI){
+        new_ps_x = t->previous->ps_x + opposite(n, (t->facing - PI/2));
+    }else if(t->facing <= 1.5 * PI){
+        new_ps_x = t->previous->ps_x + adjacent(n, (t->facing - PI));
+    }else{
+        new_ps_x = t->previous->ps_x - opposite(n, (t->facing - 1.5*PI));
+    }
+
+    return new_ps_x;
+}
+
+
+double opposite(double hypotenuse, double theta)
 {
     double opposite;
 
     opposite = sin(theta) * hypotenuse;
 
-    return round(opposite);
+    return opposite;
 }
 
-double adjacent(int hypotenuse, double theta)
+double adjacent(double hypotenuse, double theta)
 {
     double adjacent;
 
     adjacent = cos(theta) * hypotenuse;
 
-    return round(adjacent);
+    return adjacent;
 }
 
 void turtle_to_array(turtle* t, char array[HEIGHT][WIDTH])
@@ -582,6 +633,8 @@ turtle* init_turtle(void){
     t->column = START_COLUMN;
     t->facing = PI/2;
     t->row = START_ROW;
+    t->ps_x = PS_X_START;
+    t->ps_y = PS_Y_START;
 
     return t;
 }
@@ -688,6 +741,107 @@ void line_draw(char array[HEIGHT][WIDTH], double sx, double sy, double ex, doubl
             if((int)ny < HEIGHT && (int)ny >= 0 && (int)nx < WIDTH && (int)nx >= 0){
                 array[(int)ny][(int)nx] = colour;
             }
+        }
+    }
+}
+
+void turtle_to_ps(turtle* t, FILE* ps_output)
+{
+    //for start
+    fprintf(ps_output, "%.1lf setlinewidth\n", LINEWIDTH);
+    fprintf(ps_output, "%i %i scale\n", SCALE, SCALE);
+
+    while(t->next){
+        if(turtle_moves(t)){
+            fprintf(ps_output, "newpath\n");
+            fprintf(ps_output, "%lf %lf moveto\n", t->ps_x, t->ps_y);
+            fprintf(ps_output, "%lf %lf lineto\n", t->next->ps_x, t->next->ps_y);
+            set_ps_colour(t->colour, ps_output);
+            fprintf(ps_output, "stroke\n");
+        }
+        t = t->next;
+    }
+    fprintf(ps_output, "showpage\n");
+}
+
+void set_ps_colour(char colour, FILE* ps_output)
+{
+    switch (colour)
+    {
+    case 'W':
+        fprintf(ps_output, "%s setrgbcolor\n", RGB_WHITE);
+        break;
+    case 'B':
+        fprintf(ps_output, "%s setrgbcolor\n", RGB_BLUE);
+        break;
+    case 'K':
+        fprintf(ps_output, "%s setrgbcolor\n", RGB_BLACK);
+        break;
+    case 'C':
+        fprintf(ps_output, "%s setrgbcolor\n", RGB_CYAN);
+        break;
+    case 'Y':
+        fprintf(ps_output, "%s setrgbcolor\n", RGB_YELLOW);
+        break;
+    case 'G':
+        fprintf(ps_output, "%s setrgbcolor\n", RGB_GREEN);
+        break;
+    case 'R':
+        fprintf(ps_output, "%s setrgbcolor\n", RGB_RED);
+        break;
+    case 'M':
+        fprintf(ps_output, "%s setrgbcolor\n", RGB_MAGENTA);
+        break;
+    default:
+        fprintf(stderr, "%c is not a valid colour\n", colour);
+        exit(EXIT_FAILURE);
+        break;
+    }
+}
+
+bool turtle_moves(turtle* t)
+{
+    bool x_change = !(t->column == t->next->column);
+    bool y_change = !(t->row == t->next->row);
+
+    if(x_change || y_change){
+        return true;
+    }
+    return false;
+}
+
+bool get_file_ext(char* fname, char file_ext[MAX_EXT])
+{
+    bool ext = false;
+    int j = 0;
+    for(int i = 0; fname[i] != '\0'; i++){
+        if(j >= MAX_EXT){
+            fprintf(stderr, "Invalid file extension\n");
+            exit(EXIT_FAILURE);
+        }
+        if(ext){
+            file_ext[j] = fname[i];
+            j++;
+        }
+        if(fname[i] == '.'){
+            ext = true;
+        }
+    }
+    return true;
+}
+
+void ps_to_pdf(char fname[MAX_DIR])
+{
+    bool ext = false;
+    int j = 0, i;
+    char pdf[PDF_LEN] = "pdf";
+    for(i = 0; j < PDF_LEN; i++){
+        if(ext){
+            fname[i] = pdf[j];
+            j++;
+        }
+        if(fname[i] == '.'){
+            ext = true;
         }
     }
 }

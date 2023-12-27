@@ -47,22 +47,22 @@ run: all
 	./interp_s TTLs/hypno.ttl out_hypno.txt
 	./interp_s TTLs/5x5.ttl out_5x5.txt
 	./interp_s TTLs/downarrow.ttl out_downarrow.txt
-	./interp_s TTLs/fail_parse_ok_interp.ttl out_fail_parse_ok_interp.txt
-	# ./interp_s TTLs/empty.ttl out_empty.ps
-	# ./interp_s TTLs/forward.ttl out_forward.ps
-	# ./interp_s TTLs/set1.ttl out_set1.ps
-	# ./interp_s TTLs/donothing.ttl out_donothing.ps
+	# ./interp_s TTLs/fail_parse_ok_interp.ttl out_fail_parse_ok_interp.txt
+	./interp_s TTLs/empty.ttl out_empty.ps
+	./interp_s TTLs/forward.ttl out_forward.ps
+	./interp_s TTLs/set1.ttl out_set1.ps
+	./interp_s TTLs/donothing.ttl out_donothing.ps
 	# ./interp_s TTLs/fail_parse_ok_interp.ttl out_fail_parse_ok_interp.ps
-	# ./interp_s TTLs/set2.ttl out_set2.ps
-	# ./interp_s TTLs/turn.ttl out_turn.ps
-	# ./interp_s TTLs/spiral.ttl out_spiral.ps
-	# ./interp_s TTLs/octagon1.ttl out_octagon1.ps
-	# ./interp_s TTLs/octagon2.ttl out_octagon2.ps
-	# ./interp_s TTLs/tunnel.ttl out_tunnel.ps
-	# ./interp_s TTLs/labyrinth.ttl out_labyrinth.ps
-	# ./interp_s TTLs/hypno.ttl out_hypno.ps
-	# ./interp_s TTLs/5x5.ttl out_5x5.ps
-	# ./interp_s TTLs/downarrow.ttl out_downarrow.ps
+	./interp_s TTLs/set2.ttl out_set2.ps
+	./interp_s TTLs/turn.ttl out_turn.ps
+	./interp_s TTLs/spiral.ttl out_spiral.ps
+	./interp_s TTLs/octagon1.ttl out_octagon1.ps
+	./interp_s TTLs/octagon2.ttl out_octagon2.ps
+	./interp_s TTLs/tunnel.ttl out_tunnel.ps
+	./interp_s TTLs/labyrinth.ttl out_labyrinth.ps
+	./interp_s TTLs/hypno.ttl out_hypno.ps
+	./interp_s TTLs/5x5.ttl out_5x5.ps
+	./interp_s TTLs/downarrow.ttl out_downarrow.ps
 
 clean:
 	rm -f parse_s interp_s Results/out_*.txt Results/out_*.ps Results/out_*.pdf
