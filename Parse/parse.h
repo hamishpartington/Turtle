@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -6,6 +8,7 @@
 #include <stdbool.h>
 
 #define LONGEST_WORD 20
+#define NUM_ARGS 2
 
 #define strsame(A, B) (strcmp(A, B) == 0)
 #define ERROR(PHRASE) { fprintf(stderr, \
