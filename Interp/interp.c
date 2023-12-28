@@ -200,13 +200,12 @@ bool loop(program** prog, turtle** t)
     }
     *prog = (*prog)->next;
     program* loop_start = *prog;
-    bool pass;
+    bool pass = true;
     for(int i = 0; loop_var_list[i][0] != '\0'; i++){
         *prog = loop_start;
         set_var(loop_var, loop_var_list[i], t);
         pass = inlist(prog, t);
     }
-    
     return pass;
 }
 
