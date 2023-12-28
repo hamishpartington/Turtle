@@ -21,6 +21,21 @@
 #define LETTERS 26
 #define ASCII_A 65
 #define OUT_FILE_ARG 2
+#define PS_X_START 30
+#define PS_Y_START 40
+#define RGB_BLUE "0 0 1"
+#define RGB_BLACK "0 0 0"
+#define RGB_RED "1 0 0"
+#define RGB_CYAN "0 1 1"
+#define RGB_GREEN "0 1 0"
+#define RGB_MAGENTA "1 0 1"
+#define RGB_YELLOW "1 1 0"
+#define RGB_WHITE "0.8 0.8 0.8"
+#define SCALE 10
+#define LINEWIDTH 0.2
+#define MAX_EXT 4
+#define MAX_DIR 100
+#define PDF_LEN 3
 
 
 #define strsame(A, B) (strcmp(A, B) == 0)
@@ -38,6 +53,8 @@ struct program {
 struct turtle {
     int row;
     int column;
+    double ps_x;
+    double ps_y;
     char colour;
     double facing;
     char variables[LETTERS][LONGEST_WORD];
@@ -91,8 +108,6 @@ bool isop(program** prog);
 
 bool op(program** prog);
 
-void set_values(turtle** t, int row, int column, char colour, double facing);
-
 void set_prev_values(turtle** t);
 
 double deg_to_radians(double deg);
@@ -103,9 +118,9 @@ int new_row(turtle* t, double n);
 
 int new_column(turtle* t, double n);
 
-double opposite(int hypotenuse, double theta);
+double opposite(double hypotenuse, double theta);
 
-double adjacent(int hypotenuse, double theta);
+double adjacent(double hypotenuse, double theta);
 
 void turtle_to_array(turtle* t, char array[HEIGHT][WIDTH]);
 
@@ -130,3 +145,17 @@ bool set_col(turtle** t, char word[LONGEST_WORD], bool is_var);
 void line_draw(char array[HEIGHT][WIDTH], double sx, double sy, double ex, double ey, char colour);
 
 void change_col(char c);
+
+double new_ps_y(turtle* t, double n);
+
+double new_ps_x(turtle* t, double n);
+
+void turtle_to_ps(turtle* t, FILE* ps_output);
+
+void set_ps_colour(char colour, FILE* ps_output);
+
+bool turtle_moves(turtle* t);
+
+bool get_file_ext(char* fname, char file_ext[MAX_EXT]);
+
+void ps_to_pdf(char fname[MAX_DIR]);
