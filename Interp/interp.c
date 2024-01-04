@@ -733,8 +733,9 @@ void line_draw(char array[HEIGHT][WIDTH], double sx, double sy, double ex, doubl
     distdx = dx/dist;
     distdy = dy/dist;
 
+
     if(dist > 0){
-        for(int i = 1; i < (int)round(dist); i++){
+        for(int i = 0; i <= (int)round(dist); i++){
             nx = round(sx + (distdx*i));
             ny = round(sy + (distdy*i));
             if((int)ny < HEIGHT && (int)ny >= 0 && (int)nx < WIDTH && (int)nx >= 0){
