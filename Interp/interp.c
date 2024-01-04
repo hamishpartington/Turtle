@@ -591,6 +591,7 @@ void print_to_console(char array[HEIGHT][WIDTH])
         }
         printf("\n");
     }
+    neillreset();
 }
 
 void change_col(char c)
