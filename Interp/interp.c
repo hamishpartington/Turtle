@@ -466,13 +466,13 @@ int new_row(turtle* t, double n)
 {
     int new_row;
     if(t->facing <= PI/2){
-        new_row = t->previous->row + (int)round(opposite(n, t->facing));
+        new_row = t->previous->row - (int)round(opposite(n, t->facing));
     }else if(t->facing <= PI){
-        new_row = t->previous->row + (int)round(adjacent(n, (t->facing - PI/2)));
+        new_row = t->previous->row - (int)round(adjacent(n, (t->facing - PI/2)));
     }else if(t->facing <= 1.5 * PI){
-        new_row = t->previous->row - (int)round(opposite(n, (t->facing - PI)));
+        new_row = t->previous->row + (int)round(opposite(n, (t->facing - PI)));
     }else{
-        new_row = t->previous->row - (int)round(adjacent(n, (t->facing - 1.5*PI)));
+        new_row = t->previous->row + (int)round(adjacent(n, (t->facing - 1.5*PI)));
     }
 
     return new_row;
