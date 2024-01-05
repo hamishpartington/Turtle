@@ -30,11 +30,10 @@ int main (int argc, char** argv)
 
     char array[HEIGHT][WIDTH] = {{'\0'}};
 
-    turtle_to_array(t_start, array);
-
     if(argc == MIN_ARGS){
-        print_to_console(array);
+        turtle_to_array(t_start, array, true);
     }else{
+        turtle_to_array(t_start, array, false);
         char out_dir[MAX_DIR] = {'\0'};
         strcpy(out_dir, "Results/");
 
@@ -545,7 +544,7 @@ double adjacent(double hypotenuse, double theta)
     return adjacent;
 }
 
-void turtle_to_array(turtle* t, char array[HEIGHT][WIDTH])
+void turtle_to_array(turtle* t, char array[HEIGHT][WIDTH], bool console)
 {
     double sx, sy, ex, ey;
     while(t->next){      
@@ -557,6 +556,11 @@ void turtle_to_array(turtle* t, char array[HEIGHT][WIDTH])
         sx = t->column;
         ex = t->next->column;
         line_draw(array, sx, sy, ex, ey, t->colour);
+        if(console && ((int)(sx - ex) != 0 || (int)(sy - ey) != 0)){
+            neillclrscrn();
+            print_to_console(array);
+            neillbusywait(1);
+        }
         t = t->next;
     }
 }
@@ -586,7 +590,6 @@ void print_to_console(char array[HEIGHT][WIDTH])
             }else{
                 change_col(array[i][j]);
                 printf("%c", array[i][j]);
-                //neillbusywait(1);
             }
         }
         printf("\n");
@@ -733,7 +736,6 @@ void line_draw(char array[HEIGHT][WIDTH], double sx, double sy, double ex, doubl
     dist = sqrt((pow(dx, 2) + pow(dy, 2)));
     distdx = dx/dist;
     distdy = dy/dist;
-
 
     if(dist > 0){
         for(int i = 0; i <= (int)round(dist); i++){

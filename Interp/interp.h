@@ -35,7 +35,7 @@
 #define LINEWIDTH 0.2
 #define MAX_EXT 4
 #define MAX_DIR 100
-#define PDF_LEN 3
+#define PDF_LEN 4
 
 
 #define strsame(A, B) (strcmp(A, B) == 0)
@@ -122,7 +122,7 @@ double opposite(double hypotenuse, double theta);
 
 double adjacent(double hypotenuse, double theta);
 
-void turtle_to_array(turtle* t, char array[HEIGHT][WIDTH]);
+void turtle_to_array(turtle* t, char array[HEIGHT][WIDTH], bool console);
 
 void print_to_console(char array[HEIGHT][WIDTH]);
 
