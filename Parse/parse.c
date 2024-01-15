@@ -31,6 +31,10 @@ int main (int argc, char** argv)
 
 program* build_program(FILE* f)
 {
+    if(!f){
+        ERROR("Input NULL FILE pointer");
+        return NULL;
+    }
     program *start, *p;
     start = (program*)neill_calloc(1, sizeof(program));
     p = start;
@@ -145,7 +149,7 @@ bool col(program** prog)
 bool loop(program** prog)
 {
     *prog = (*prog)->next;
-    if(!ltr(prog)){
+    if(!ltr(prog, false)){
         return false;
     }
     *prog = (*prog)->next;
@@ -167,13 +171,18 @@ bool var(program** prog)
         ERROR("Expecting VAR");
         return false;
     }
-    return ltr(prog);
+    return ltr(prog, true);
 
 }
 
-bool ltr(program** prog)
+bool ltr(program** prog, bool isvar)
 {
-    if((*prog)->word[0] == '$'){
+    int len = strlen((*prog)->word);
+    if(len > 2){
+            ERROR("Expecting LTR (string too long)");
+            return false;
+    }
+    if(isvar && len == 2){
         if(!isupper((*prog)->word[1])){
             ERROR("Expecting LTR");
             return false;
@@ -245,7 +254,7 @@ bool num(program** prog)
 bool set(program** prog)
 {
     *prog = (*prog)->next;
-    if(!ltr(prog)){
+    if(!ltr(prog, false)){
         return false;
     }
     *prog = (*prog)->next;
@@ -341,7 +350,16 @@ void test(void)
     buff_reset(buffer);
     strcpy(p->word, "101.3");
     assert(num(&p));
+
+    assert(!var(&p));
+    assert(strsame(buffer, 
+    "Parsing Error: Expecting VAR occurred in var function\n"));
+    buff_reset(buffer);
+    strcpy(p->word, "$C");
+    assert(var(&p));
+
     assert(prog_free(p));
+
 
     //testing no start
     FILE* f = fopen("Testing/Test_TTLs/no_start.ttl", "r");
@@ -360,9 +378,91 @@ void test(void)
     p = build_program(f);
     start = p;
     assert(!prog(&p));
-
     assert(strsame(buffer, 
     "Parsing Error: No end to program occurred in inlist function\n"));
+    buff_reset(buffer);
+    assert(prog_free(start));
+    fclose(f);
+
+    //testing ins
+    f = fopen("Testing/Test_TTLs/fail_ins.ttl", "r");
+    p = build_program(f);
+    start = p;
+    assert(!prog(&p));
+    assert(strsame(buffer, 
+    "Parsing Error: Expecting INS occurred in ins function\n"));
+    buff_reset(buffer);
+    assert(prog_free(start));
+    fclose(f);
+
+    //testing col
+    f = fopen("Testing/Test_TTLs/fail_col1.ttl", "r");
+    p = build_program(f);
+    start = p;
+    assert(!prog(&p));
+    assert(strsame(buffer, 
+    "Parsing Error: Expecting COL occurred in col function\n"));
+    buff_reset(buffer);
+    assert(prog_free(start));
+    fclose(f);
+
+    f = fopen("Testing/Test_TTLs/fail_col2.ttl", "r");
+    p = build_program(f);
+    start = p;
+    assert(!prog(&p));
+    assert(strsame(buffer, 
+    "Parsing Error: Expecting COL occurred in col function\n"));
+    buff_reset(buffer);
+    assert(prog_free(start));
+    fclose(f);
+
+    //testing loop
+    f = fopen("Testing/Test_TTLs/fail_loop.ttl", "r");
+    p = build_program(f);
+    start = p;
+    assert(!prog(&p));
+    assert(strsame(buffer, 
+    "Parsing Error: Expecting OVER occurred in loop function\n"));
+    buff_reset(buffer);
+    assert(prog_free(start));
+    fclose(f);
+
+    //testing ltr
+    f = fopen("Testing/Test_TTLs/fail_ltr1.ttl", "r");
+    p = build_program(f);
+    start = p;
+    assert(!prog(&p));
+    assert(strsame(buffer, 
+    "Parsing Error: Expecting LTR (string too long) occurred in ltr function\n"));
+    buff_reset(buffer);
+    assert(prog_free(start));
+    fclose(f);
+    f = fopen("Testing/Test_TTLs/fail_ltr2.ttl", "r");
+    p = build_program(f);
+    start = p;
+    assert(!prog(&p));
+    assert(strsame(buffer, 
+    "Parsing Error: Expecting LTR occurred in ltr function\n"));
+    buff_reset(buffer);
+    assert(prog_free(start));
+    fclose(f);
+    f = fopen("Testing/Test_TTLs/fail_ltr3.ttl", "r");
+    p = build_program(f);
+    start = p;
+    assert(!prog(&p));
+    assert(strsame(buffer, 
+    "Parsing Error: Expecting LTR occurred in ltr function\n"));
+    buff_reset(buffer);
+    assert(prog_free(start));
+    fclose(f);
+
+    //testing lst
+    f = fopen("Testing/Test_TTLs/fail_lst.ttl", "r");
+    p = build_program(f);
+    start = p;
+    assert(!prog(&p));
+    assert(strsame(buffer, 
+    "Parsing Error: Expecting { for LST occurred in lst function\n"));
     buff_reset(buffer);
     assert(prog_free(start));
     fclose(f);

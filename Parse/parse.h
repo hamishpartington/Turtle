@@ -47,7 +47,7 @@ bool col(program** prog);
 
 bool loop(program** prog);
 
-bool ltr(program** prog);
+bool ltr(program** prog, bool isvar);
 
 bool var(program** prog);
 
