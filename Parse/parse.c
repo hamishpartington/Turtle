@@ -7,15 +7,14 @@ int main (int argc, char** argv)
         exit(EXIT_FAILURE);
     }
 
+    if(!PRODUCTION){
+        test();
+    }
+
     FILE* f = fopen(argv[1], "r");
     program *start, *p;
-    start = (program*)neill_calloc(1, sizeof(program));
-    p = start;
 
-    while(fscanf(f, "%s", p->word) != EOF){
-        p->next = (program*)neill_calloc(1, sizeof(program));
-        p = p->next;
-    }
+    start = build_program(f);
     p = start;
 
     bool pass = prog(&p);
@@ -28,6 +27,19 @@ int main (int argc, char** argv)
         return EXIT_SUCCESS;
     }
     return EXIT_FAILURE;
+}
+
+program* build_program(FILE* f)
+{
+    program *start, *p;
+    start = (program*)neill_calloc(1, sizeof(program));
+    p = start;
+
+    while(fscanf(f, "%s", p->word) != EOF){
+        p->next = (program*)neill_calloc(1, sizeof(program));
+        p = p->next;
+    }
+    return start;
 }
 
 void* neill_calloc(int n, size_t size)
@@ -63,7 +75,7 @@ bool prog(program** prog)
 {
     if(!strsame((*prog)->word, "START")){
         ERROR("No START statement");
-        return false; 
+        return false;
     }
     *prog = (*prog)->next;
     return inlist(prog);
@@ -73,6 +85,11 @@ bool inlist(program** prog)
 {
     if(strsame((*prog)->word, "END")){
         return true;
+    }
+    //catch programs with no end
+    if((*prog)->next == NULL && !strsame((*prog)->word, "END")){
+        ERROR("No end to program");
+        return false;
     }
     if(!ins(prog)){
         return false;
@@ -290,15 +307,71 @@ bool word(program** prog)
     return true;
 }
 
+void buff_reset(char buffer[BUFSIZ])
+{
+    freopen("NUL", "a", stdout);
+    memset(buffer, 0, BUFSIZ);
+    setvbuf(stdout, buffer, _IOFBF, BUFSIZ);
+}
 
+void test(void)
+{
+    program* start, *p = NULL;
 
+    assert(!prog_free(p));
+    p = (program*)neill_calloc(1, sizeof(program));
 
+    //code to redirect stdout to buffer so error messages can be tested
+    char buffer[BUFSIZ];
+    fflush(stdout);
+    int stdout_save = dup(STDOUT_FILENO);
+    freopen("NUL", "a", stdout);
+    setvbuf(stdout, buffer, _IOFBF, BUFSIZ);
 
+    strcpy(p->word, "NOT_START");
+    assert(!prog(&p));
+    assert(strsame(buffer, 
+    "Parsing Error: No START statement occurred in prog function\n"));
+    //need to reset buffer before each test
+    buff_reset(buffer);
 
+    assert(!num(&p));
+    assert(strsame(buffer, 
+    "Parsing Error: Expecting NUM occurred in num function\n"));
+    buff_reset(buffer);
+    strcpy(p->word, "101.3");
+    assert(num(&p));
+    assert(prog_free(p));
 
+    //testing no start
+    FILE* f = fopen("Testing/Test_TTLs/no_start.ttl", "r");
+    p = build_program(f);
+    start = p;
 
+    assert(!prog(&p));
+    assert(strsame(buffer, 
+    "Parsing Error: No START statement occurred in prog function\n"));
+    buff_reset(buffer);
+    assert(prog_free(start));
+    fclose(f);
 
+    //testing no end
+    f = fopen("Testing/Test_TTLs/no_end.ttl", "r");
+    p = build_program(f);
+    start = p;
+    assert(!prog(&p));
 
+    assert(strsame(buffer, 
+    "Parsing Error: No end to program occurred in inlist function\n"));
+    buff_reset(buffer);
+    assert(prog_free(start));
+    fclose(f);
+
+    //restore stdout
+    freopen("NUL", "a", stdout);
+    dup2(stdout_save, STDOUT_FILENO);
+    setvbuf(stdout, NULL, _IOFBF, BUFSIZ);
+}
 
 
 
