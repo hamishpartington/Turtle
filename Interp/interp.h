@@ -36,6 +36,7 @@
 #define MAX_EXT 4
 #define MAX_DIR 100
 #define PDF_LEN 4
+#define PRODUCTION 0
 
 
 #define strsame(A, B) (strcmp(A, B) == 0)
@@ -67,6 +68,11 @@ typedef struct turtle turtle;
 
 //Stolen from Neill (https://github.com/csnwc/ADTs/blob/main/General/general.c)
 
+void test(void);
+
+bool output_func(int argc, turtle* t_start, char** argv);
+
+program* build_program(FILE* f);
 
 bool prog_free(program* start);
 

@@ -3,10 +3,10 @@
 //Assert Testing
 I have done carried out asssert testing for functions where this is possible
 and not overly contrived. 
-However, as this is a recursive descent parser it is difficult to test the 
+However, as this is a recursive descent parser it is difficult to test some 
 functions in isolation. Instead I have written several .ttl scripts, each of 
 which contain errors which should cause one of the functions which make up the 
-parser to fail.By testing if the error messages output are as expected for these 
+parser to fail. By testing if the error messages output are as expected for these 
 scripts, I can check if each function is working as expected.
 
 ///Changes made
@@ -14,3 +14,6 @@ scripts, I can check if each function is working as expected.
     e.g. Cabbage being a valid letter
     - added a boolean isvar flag to arguments of ltr() to prevent e.g. LOOP $C 
     from being parsed succesfully
+
+/Testing the interpreter
+

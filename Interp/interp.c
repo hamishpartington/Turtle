@@ -8,30 +8,42 @@ int main (int argc, char** argv)
         exit(EXIT_FAILURE);
     }
 
-    FILE* f = fopen(argv[1], "r");
-    program *start, *p, *previous;
-    start = (program*)neill_calloc(1, sizeof(program));
-    p = start;
-
-    while(fscanf(f, "%s", p->word) != EOF){
-        previous = p;
-        p->next = (program*)neill_calloc(1, sizeof(program));
-        p = p->next;
-        p->previous = previous;
-
+    if(!PRODUCTION){
+        test();
     }
+
+    FILE* f = fopen(argv[1], "r");
+    program *start, *p;
+
+    start = build_program(f);
+    fclose(f);
+    p = start;
     
     turtle* t, *t_start = init_turtle();
-
     t = t_start;
-    p = start;
 
     bool pass = prog(&p, &t);
 
+    if(!output_func(argc, t_start, argv)){
+        pass = false;
+    }
+    
+    prog_free(start);
+    turtle_free(t_start);
+
+    if(pass){
+        return EXIT_SUCCESS;
+    }
+    return EXIT_FAILURE;
+}
+
+bool output_func(int argc, turtle* t_start, char** argv)
+{
     char array[HEIGHT][WIDTH] = {{'\0'}};
 
     if(argc == MIN_ARGS){
         turtle_to_array(t_start, array, true);
+        return true;
     }else{
         turtle_to_array(t_start, array, false);
         char out_dir[MAX_DIR] = {'\0'};
@@ -45,6 +57,7 @@ int main (int argc, char** argv)
         if(strsame(file_ext, "txt")){
             print_to_file(array, out_file);
             fclose(out_file);
+            return true;
         }else if(strsame(file_ext, "ps")){
             turtle_to_ps(t_start, out_file);
             fclose(out_file);
@@ -55,22 +68,32 @@ int main (int argc, char** argv)
             ps_to_pdf(out_dir);
             strcat(system_command, out_dir);
             system(system_command);
+            return true;
         }else{
             fprintf(stderr, "%s is not a valid output file type\n", file_ext);
-            pass = false;
             fclose(out_file);
+            return false;
         }       
     }
+}
 
-    prog_free(start);
-    turtle_free(t_start);
-
-    fclose(f);
-
-    if(pass){
-        return EXIT_SUCCESS;
+program* build_program(FILE* f)
+{
+    if(!f){
+        ERROR("Input NULL FILE pointer");
+        return NULL;
     }
-    return EXIT_FAILURE;
+    program *start, *p, *previous;
+    start = (program*)neill_calloc(1, sizeof(program));
+    p = start;
+
+    while(fscanf(f, "%s", p->word) != EOF){
+        previous = p;
+        p->next = (program*)neill_calloc(1, sizeof(program));
+        p = p->next;
+        p->previous = previous;
+    }
+    return start;
 }
 
 bool prog_free(program* start)
@@ -847,4 +870,9 @@ void ps_to_pdf(char fname[MAX_DIR])
             ext = true;
         }
     }
+}
+
+void test(void)
+{
+
 }
