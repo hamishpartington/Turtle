@@ -3,11 +3,11 @@
 //Assert Testing
 I have done carried out asssert testing for functions where this is possible
 and not overly contrived. 
-However, as this is a recursive descent parser it is difficult to test the functions in
-isolation. Instead I have written several .ttl scripts, each of which contain 
-errors which should cause one of the functions which make up the parser to fail.
-By testing if the error messages output are as expected for these scripts, I 
-can check if each function is working as expected.
+However, as this is a recursive descent parser it is difficult to test the 
+functions in isolation. Instead I have written several .ttl scripts, each of 
+which contain errors which should cause one of the functions which make up the 
+parser to fail.By testing if the error messages output are as expected for these 
+scripts, I can check if each function is working as expected.
 
 ///Changes made
     -ltr(): realised I needed to check strlen within the function to prevent

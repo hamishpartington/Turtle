@@ -344,6 +344,7 @@ void test(void)
     //need to reset buffer before each test
     buff_reset(buffer);
 
+    //testing num
     assert(!num(&p));
     assert(strsame(buffer, 
     "Parsing Error: Expecting NUM occurred in num function\n"));
@@ -351,12 +352,43 @@ void test(void)
     strcpy(p->word, "101.3");
     assert(num(&p));
 
+    // testing var
     assert(!var(&p));
     assert(strsame(buffer, 
     "Parsing Error: Expecting VAR occurred in var function\n"));
     buff_reset(buffer);
     strcpy(p->word, "$C");
     assert(var(&p));
+
+    // testing word
+    assert(!word(&p));
+    assert(strsame(buffer, 
+    "Parsing Error: Expecting WORD occurred in word function\n"));
+    buff_reset(buffer);
+    strcpy(p->word, "\"$C");
+    assert(!word(&p));
+    assert(strsame(buffer, 
+    "Parsing Error: Expecting WORD occurred in word function\n"));
+    buff_reset(buffer);
+    strcpy(p->word, "$C\"");
+    assert(!word(&p));
+    assert(strsame(buffer, 
+    "Parsing Error: Expecting WORD occurred in word function\n"));
+    buff_reset(buffer);
+    strcpy(p->word, "\"$C\"");
+    assert(word(&p));
+
+    //testing isop (also tests op)
+    strcpy(p->word, "-");
+    assert(isop(&p));
+    strcpy(p->word, "+");
+    assert(isop(&p));
+    strcpy(p->word, "*");
+    assert(isop(&p));
+    strcpy(p->word, "/");
+    assert(isop(&p));
+    strcpy(p->word, ".");
+    assert(!isop(&p));
 
     assert(prog_free(p));
 
@@ -466,6 +498,52 @@ void test(void)
     buff_reset(buffer);
     assert(prog_free(start));
     fclose(f);
+
+    //testing varnum
+    f = fopen("Testing/Test_TTLs/fail_varnum.ttl", "r");
+    p = build_program(f);
+    start = p;
+    assert(!prog(&p));
+    assert(strsame(buffer, 
+    "Parsing Error: Expecting VARNUM occurred in varnum function\n"));
+    buff_reset(buffer);
+    assert(prog_free(start));
+    fclose(f);
+
+    //testing set
+    f = fopen("Testing/Test_TTLs/fail_set.ttl", "r");
+    p = build_program(f);
+    start = p;
+    assert(!prog(&p));
+    assert(strsame(buffer, 
+    "Parsing Error: Expecting SET occurred in set function\n"));
+    buff_reset(buffer);
+    assert(prog_free(start));
+    fclose(f);
+
+    //testing pfix
+    f = fopen("Testing/Test_TTLs/fail_pfix.ttl", "r");
+    p = build_program(f);
+    start = p;
+    assert(!prog(&p));
+    assert(strsame(buffer, 
+    "Parsing Error: Expecting VARNUM occurred in varnum function\n"));
+    buff_reset(buffer);
+    assert(prog_free(start));
+    fclose(f);
+
+    //testing item
+    f = fopen("Testing/Test_TTLs/fail_item.ttl", "r");
+    p = build_program(f);
+    start = p;
+    assert(!prog(&p));
+    assert(strsame(buffer, 
+    "Parsing Error: Expecting VARNUM occurred in varnum function\n"));
+    buff_reset(buffer);
+    assert(prog_free(start));
+    fclose(f);
+
+    assert(!build_program(NULL));
 
     //restore stdout
     freopen("NUL", "a", stdout);
