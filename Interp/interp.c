@@ -27,7 +27,7 @@ int main (int argc, char** argv)
     if(!output_func(argc, t_start, argv)){
         pass = false;
     }
-    
+
     prog_free(start);
     turtle_free(t_start);
 
@@ -874,5 +874,11 @@ void ps_to_pdf(char fname[MAX_DIR])
 
 void test(void)
 {
+    program* start, *p = NULL;
+
+    assert(!prog_free(p));
+    p = (program*)neill_calloc(1, sizeof(program));
+    start = p;
+    assert(prog_free(start));
 
 }

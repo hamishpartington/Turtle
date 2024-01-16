@@ -6,6 +6,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include <assert.h>
 #include "./Stack/stack.h"
 
 #define LONGEST_WORD 20
