@@ -13,6 +13,10 @@
 #define ELEMSIZE 20
 #define STACKTYPE "Linked"
 #define MAX_PFIX 20
+#define STACK_ERROR(PHRASE) { fprintf(stderr, \
+        "Stack Error: %s occurred in %s function\n", PHRASE, \
+        __func__); \
+        exit(EXIT_FAILURE); }
 
 struct dataframe {
    char c[MAX_PFIX];
