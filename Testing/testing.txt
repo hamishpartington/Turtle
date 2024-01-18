@@ -21,6 +21,13 @@ scripts, I can check if each function is working as expected.
 //Assert testing
 As with the parser, I carried out assert testing where possible
 
+///Changes made
+    -Realised that I needed to have a function to jump to the end of a loop if
+    that loop had no items.
+    - Also wrote a similar function to be run for all loops which would check 
+    if the loop had an end and if no end was found, it prints an errror
+    message to the console.
+
 //Shell script comparing my outputs to Neill's outputs
 If my results where comparable to Neill's, I believed that it was reasonably 
 safe to conclude that my parser was working as intended. I used the comparepdf

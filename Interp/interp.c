@@ -81,7 +81,7 @@ program* build_program(FILE* f)
 {
     if(!f){
         ERROR("Input NULL FILE pointer");
-        return NULL;
+        exit(EXIT_FAILURE);
     }
     program *start, *p, *previous;
     start = (program*)neill_calloc(1, sizeof(program));
@@ -136,6 +136,10 @@ bool turtle_free(turtle* start)
 
 bool prog(program** prog, turtle** t)
 {
+    if(!(*prog) || !(*t)){
+        ERROR("Null pointer input");
+        return false;
+    }
     if(!strsame((*prog)->word, "START")){
         ERROR("No START statement");
         return false; 
@@ -226,9 +230,22 @@ bool loop(program** prog, turtle** t)
     *prog = (*prog)->next;
     program* loop_start = *prog;
     bool pass = true;
+    //if no items in loop we need to skip to end
+    if(loop_var_list[0][0] == '\0'){
+        pass = skip_to_loop_end(prog);
+    }else{
+        pass = check_for_loop_end(*prog);
+    }
+    if(!pass){
+        return false;
+    }
     for(int i = 0; loop_var_list[i][0] != '\0'; i++){
         *prog = loop_start;
         pass = (set_var(loop_var, loop_var_list[i], t) && inlist(prog, t));
+        //to catch when setting 1 element of loop fails but not all
+        if(!pass){
+            return false;
+        }
     }
     return pass;
 }
@@ -752,7 +769,8 @@ bool set_col(turtle** t, char word[LONGEST_WORD], bool is_var){
     }else if(strsame(colour, "\"WHITE\"")){
         (*t)->colour = 'W';
     }else{
-        fprintf(stderr, "%s is not a valid colour\n", colour);
+        fprintf(stdout, "Interpretor Error: %s is not a valid colour in %s function\n", 
+        colour, __func__);
         return false;
     }
     return true;
@@ -893,6 +911,61 @@ void buff_reset(char buffer[BUFSIZ])
     setvbuf(stdout, buffer, _IOFBF, BUFSIZ);
 }
 
+bool skip_to_loop_end(program** prog){
+    int offset = 0;
+    while(!strsame((*prog)->word, "END") || offset != 0){
+        if(strsame((*prog)->word, "")){
+            ERROR("LOOP has no END");
+            return false;
+        }
+        if(strsame((*prog)->word, "LOOP")){
+            offset++;
+        }
+        *prog = (*prog)->next;
+        if(strsame((*prog)->word, "END") && strsame((*prog)->next->word, "")){
+            ERROR("LOOP has no END");
+            return false;
+        }
+        if(strsame((*prog)->word, "END") && offset > 0){
+            offset--;
+            *prog = (*prog)->next;
+        }
+        if(strsame((*prog)->word, "END") && strsame((*prog)->next->word, "")){
+            ERROR("LOOP has no END");
+            return false;
+        }
+    }
+    return true;
+}
+
+bool check_for_loop_end(program* prog){
+    int offset = 0;
+    while(!strsame(prog->word, "END") || offset != 0){
+        if(strsame(prog->word, "")){
+            ERROR("LOOP has no END");
+            return false;
+        }
+        if(strsame(prog->word, "LOOP")){
+            offset++;
+        }
+        prog = prog->next;
+        if(strsame(prog->word, "END") && strsame(prog->next->word, "")){
+            ERROR("LOOP has no END");
+            return false;
+        }
+        if(strsame(prog->word, "END") && offset > 0){
+            offset--;
+            prog = prog->next;
+        }
+        if(strsame(prog->word, "END") && strsame(prog->next->word, "")){
+            ERROR("LOOP has no END");
+            return false;
+        }
+    }
+    return true;
+}
+
+
 void test(void)
 {
     program* start, *p = NULL;
@@ -946,6 +1019,80 @@ void test(void)
     assert(prog_free(start));
     assert(turtle_free(t_start));
     fclose(f);
+
+    //fail set_col
+    f = fopen("Testing/Test_TTLs/fail_set_col1.ttl", "r");
+    p = build_program(f);
+    start = p; 
+    t = init_turtle();
+    t_start = t;
+    assert(t != NULL);
+    assert(!prog(&p, &t));
+    assert(strsame(buffer, 
+    "Interpretor Error: \"ORANGE\" is not a valid colour in set_col function\n"));
+    buff_reset(buffer);
+    assert(prog_free(start));
+    assert(turtle_free(t_start));
+    fclose(f);
+
+    f = fopen("Testing/Test_TTLs/fail_set_col2.ttl", "r");
+    p = build_program(f);
+    start = p; 
+    t = init_turtle();
+    t_start = t;
+    assert(t != NULL);
+    assert(!prog(&p, &t));
+    assert(strsame(buffer, 
+    "Interpretor Error: \"MAUVE\" is not a valid colour in set_col function\n"));
+    buff_reset(buffer);
+    assert(prog_free(start));
+    assert(turtle_free(t_start));
+    fclose(f);
+
+    // testing loops
+    f = fopen("Testing/Test_TTLs/fail_interp_loop1.ttl", "r");
+    p = build_program(f);
+    start = p; 
+    t = init_turtle();
+    t_start = t;
+    assert(t != NULL);
+    prog(&p, &t);
+    assert(strsame(buffer, 
+    "Interpretor Error: LOOP has no END occurred in skip_to_loop_end function\n"));
+    buff_reset(buffer);
+    assert(prog_free(start));
+    assert(turtle_free(t_start));
+    fclose(f);
+
+    // testing loops
+    f = fopen("Testing/Test_TTLs/fail_interp_loop2.ttl", "r");
+    p = build_program(f);
+    start = p; 
+    t = init_turtle();
+    t_start = t;
+    assert(t != NULL);
+    prog(&p, &t);
+    assert(strsame(buffer, 
+    "Interpretor Error: LOOP has no END occurred in check_for_loop_end function\n"));
+    buff_reset(buffer);
+    assert(prog_free(start));
+    assert(turtle_free(t_start));
+    fclose(f);
+
+    f = fopen("Testing/Test_TTLs/fail_interp_loop3.ttl", "r");
+    p = build_program(f);
+    start = p; 
+    t = init_turtle();
+    t_start = t;
+    assert(t != NULL);
+    prog(&p, &t);
+    assert(strsame(buffer, 
+    "Interpretor Error: LOOP has no END occurred in check_for_loop_end function\n"));
+    buff_reset(buffer);
+    assert(prog_free(start));
+    assert(turtle_free(t_start));
+    fclose(f);
+
 
 
     //restore stdout

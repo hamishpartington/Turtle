@@ -168,3 +168,7 @@ bool get_file_ext(char* fname, char file_ext[MAX_EXT]);
 void ps_to_pdf(char fname[MAX_DIR]);
 
 void buff_reset(char buffer[BUFSIZ]);
+
+bool skip_to_loop_end(program** prog);
+
+bool check_for_loop_end(program* prog);
