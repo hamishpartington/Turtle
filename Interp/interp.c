@@ -149,6 +149,11 @@ bool inlist(program** prog, turtle** t)
     if(strsame((*prog)->word, "END")){
         return true;
     }
+    //catch programs with no end
+    if((*prog)->next == NULL && !strsame((*prog)->word, "END")){
+        ERROR("No end to program");
+        return false;
+    }
     if(!ins(prog, t)){
         return false;
     }
@@ -191,11 +196,9 @@ bool col(program** prog, turtle** t)
 {
     *prog = (*prog)->next;
     if((*prog)->word[0] == '$'){
-        set_col(t, (*prog)->word, true);
-        return var(prog, t);
+        return (set_col(t, (*prog)->word, true) && var(prog, t));
     }else if((*prog)->word[0] == '"'){
-        set_col(t, (*prog)->word, false);
-        return word(prog);
+        return (set_col(t, (*prog)->word, false) && word(prog));
     }else{
         ERROR("Expecting COL");
         return false;
@@ -205,7 +208,7 @@ bool col(program** prog, turtle** t)
 bool loop(program** prog, turtle** t)
 {
     *prog = (*prog)->next;
-    if(!ltr(prog)){
+    if(!ltr(prog, false)){
         return false;
     }
     char loop_var = (*prog)->word[0];
@@ -225,8 +228,7 @@ bool loop(program** prog, turtle** t)
     bool pass = true;
     for(int i = 0; loop_var_list[i][0] != '\0'; i++){
         *prog = loop_start;
-        set_var(loop_var, loop_var_list[i], t);
-        pass = inlist(prog, t);
+        pass = (set_var(loop_var, loop_var_list[i], t) && inlist(prog, t));
     }
     return pass;
 }
@@ -240,7 +242,7 @@ bool var(program** prog, turtle** t)
 
     char var[LONGEST_WORD];
     strcpy(var, (*prog)->word);
-    var_get(var, t);
+    bool get_success = var_get(var, t);
 
     double rad, n = atof(var);
 
@@ -259,13 +261,18 @@ bool var(program** prog, turtle** t)
         (*t)->ps_y = new_ps_y(*t, n);
     }
 
-    return ltr(prog);
+    return (get_success && ltr(prog, true));
 
 }
 
-bool ltr(program** prog)
+bool ltr(program** prog, bool isvar)
 {
-    if((*prog)->word[0] == '$'){
+    int len = strlen((*prog)->word);
+    if(len > 2){
+            ERROR("Expecting LTR (string too long)");
+            return false;
+    }
+    if(isvar && len == 2){
         if(!isupper((*prog)->word[1])){
             ERROR("Expecting LTR");
             return false;
@@ -360,7 +367,7 @@ bool num(program** prog, turtle** t)
 bool set(program** prog, turtle** t)
 {
     *prog = (*prog)->next;
-    if(!ltr(prog)){
+    if(!ltr(prog, false)){
         return false;
     }
     char var = (*prog)->word[0];
@@ -373,32 +380,31 @@ bool set(program** prog, turtle** t)
     stack* pfix_stack = stack_init();
     bool pass = pfix(prog, t, pfix_stack);
     char val[MAX_PFIX];
-    stack_pop(pfix_stack, val);
+    pass = (pass && stack_pop(pfix_stack, val));
     stack_free(pfix_stack);
-
-    set_var(var, val, t);
     
-    return pass;
+    return (set_var(var, val, t) && pass);
 }
 
 bool pfix(program** prog, turtle** t, stack* pfix_stack)
 {
     char result[MAX_PFIX], v1[MAX_PFIX] = {'\0'}, v2[MAX_PFIX] = {'\0'};
+    bool pass = true;
     if(strsame((*prog)->word,")")){
         return true;
     }else if(isop(prog)){
         if(!op(prog)){
             return false;
         }
-        stack_pop(pfix_stack, v2);
-        stack_pop(pfix_stack, v1);
+        pass = stack_pop(pfix_stack, v2);
+        pass = (pass && stack_pop(pfix_stack, v1));
         if(v1[0] == '$'){
-            var_get(v1, t);
+            pass = (pass && var_get(v1, t));
         }
         if(v2[0] == '$'){
-            var_get(v2, t);
+            pass = (pass && var_get(v2, t));
         }
-        calc_pfix(result, v1, v2, (*prog)->word[0]);
+        pass = (pass && calc_pfix(result, v1, v2, (*prog)->word[0]));
         stack_push(pfix_stack, result);
     }else{
         if(!varnum(prog, t)){
@@ -407,7 +413,7 @@ bool pfix(program** prog, turtle** t, stack* pfix_stack)
         stack_push(pfix_stack, (*prog)->word);
     }
     *prog = (*prog)->next;
-    return pfix(prog, t, pfix_stack);
+    return (pass && pfix(prog, t, pfix_stack));
 }
 
 bool isop(program** prog)
@@ -675,7 +681,7 @@ bool set_var(char var, char val[MAX_PFIX], turtle** t)
     return true;
 }
 
-void calc_pfix(char result[MAX_PFIX], char v1[MAX_PFIX], char v2[MAX_PFIX], char op)
+bool calc_pfix(char result[MAX_PFIX], char v1[MAX_PFIX], char v2[MAX_PFIX], char op)
 {
     double x1, x2, res_int;
 
@@ -696,10 +702,12 @@ void calc_pfix(char result[MAX_PFIX], char v1[MAX_PFIX], char v2[MAX_PFIX], char
             res_int = x1 * x2;
             break;
         default:
-               fprintf(stderr, "Can't understand that operator: %c\n", op);
-               exit(EXIT_FAILURE);
+               fprintf(stdout, "Can't understand that operator: %c\n", op);
+               return false;
+               
     }
     sprintf(result, "%lf", res_int);
+    return true;
 
 }
 
@@ -745,7 +753,7 @@ bool set_col(turtle** t, char word[LONGEST_WORD], bool is_var){
         (*t)->colour = 'W';
     }else{
         fprintf(stderr, "%s is not a valid colour\n", colour);
-        exit(EXIT_FAILURE);
+        return false;
     }
     return true;
 }
@@ -790,38 +798,44 @@ void turtle_to_ps(turtle* t, FILE* ps_output)
     fprintf(ps_output, "showpage\n");
 }
 
-void set_ps_colour(char colour, FILE* ps_output)
+bool set_ps_colour(char colour, FILE* ps_output)
 {
     switch (colour)
     {
     case 'W':
         fprintf(ps_output, "%s setrgbcolor\n", RGB_WHITE);
-        break;
+        return true;
+
     case 'B':
         fprintf(ps_output, "%s setrgbcolor\n", RGB_BLUE);
-        break;
+        return true;
+
     case 'K':
         fprintf(ps_output, "%s setrgbcolor\n", RGB_BLACK);
-        break;
+        return true;
+
     case 'C':
         fprintf(ps_output, "%s setrgbcolor\n", RGB_CYAN);
-        break;
+        return true;
+
     case 'Y':
         fprintf(ps_output, "%s setrgbcolor\n", RGB_YELLOW);
-        break;
+        return true;
+
     case 'G':
         fprintf(ps_output, "%s setrgbcolor\n", RGB_GREEN);
-        break;
+        return true;
+
     case 'R':
         fprintf(ps_output, "%s setrgbcolor\n", RGB_RED);
-        break;
+        return true;
+
     case 'M':
         fprintf(ps_output, "%s setrgbcolor\n", RGB_MAGENTA);
-        break;
+        return true;
     default:
         fprintf(stderr, "%c is not a valid colour\n", colour);
-        exit(EXIT_FAILURE);
-        break;
+    return false;
     }
 }
 
@@ -843,7 +857,7 @@ bool get_file_ext(char* fname, char file_ext[MAX_EXT])
     for(int i = 0; fname[i] != '\0'; i++){
         if(j >= MAX_EXT){
             fprintf(stderr, "Invalid file extension\n");
-            exit(EXIT_FAILURE);
+            return false;
         }
         if(ext){
             file_ext[j] = fname[i];
@@ -872,6 +886,13 @@ void ps_to_pdf(char fname[MAX_DIR])
     }
 }
 
+void buff_reset(char buffer[BUFSIZ])
+{
+    freopen("NUL", "a", stdout);
+    memset(buffer, 0, BUFSIZ);
+    setvbuf(stdout, buffer, _IOFBF, BUFSIZ);
+}
+
 void test(void)
 {
     program* start, *p = NULL;
@@ -880,5 +901,57 @@ void test(void)
     p = (program*)neill_calloc(1, sizeof(program));
     start = p;
     assert(prog_free(start));
+
+    char pfix_result[MAX_PFIX];
+    int x;
+
+    //code to redirect stdout to buffer so error messages can be tested
+    char buffer[BUFSIZ];
+    fflush(stdout);
+    int stdout_save = dup(STDOUT_FILENO);
+    freopen("NUL", "a", stdout);
+    setvbuf(stdout, buffer, _IOFBF, BUFSIZ);
+
+    assert(calc_pfix(pfix_result, "23", "12", '+'));
+    x = atoi(pfix_result);
+    assert(x == 35);
+    assert(calc_pfix(pfix_result, "23", "12", '-'));
+    x = atoi(pfix_result);
+    assert(x == 11);
+    assert(calc_pfix(pfix_result, "24", "12", '/'));
+    x = atoi(pfix_result);
+    assert(x == 2);
+    assert(calc_pfix(pfix_result, "23", "12", '*'));
+    x = atoi(pfix_result);
+    assert(x == 276);
+    assert(!calc_pfix(pfix_result, "23", "12", '>'));
+    assert(strsame(buffer, 
+    "Can't understand that operator: >\n"));
+    buff_reset(buffer);
+    assert(strsame(buffer, ""));
+
+
+    turtle* t, *t_start;
+    //fail var_get
+    FILE* f = fopen("TTLs/ok_parse_fail_interp.ttl", "r");
+    p = build_program(f);
+    start = p; 
+    t = init_turtle();
+    t_start = t;
+    assert(t != NULL);
+    assert(!prog(&p, &t));
+    assert(strsame(buffer, 
+    "Interpretor Error: Attempting to access unassigned variable occurred in var_get function\n"));
+    buff_reset(buffer);
+    assert(prog_free(start));
+    assert(turtle_free(t_start));
+    fclose(f);
+
+
+    //restore stdout
+    freopen("NUL", "a", stdout);
+    dup2(stdout_save, STDOUT_FILENO);
+    setvbuf(stdout, NULL, _IOFBF, BUFSIZ);
+
 
 }

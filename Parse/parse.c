@@ -343,6 +343,7 @@ void test(void)
     "Parsing Error: No START statement occurred in prog function\n"));
     //need to reset buffer before each test
     buff_reset(buffer);
+    assert(strsame(buffer, ""));
 
     //testing num
     assert(!num(&p));

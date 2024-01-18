@@ -15,8 +15,7 @@
 #define MAX_PFIX 20
 #define STACK_ERROR(PHRASE) { fprintf(stderr, \
         "Stack Error: %s occurred in %s function\n", PHRASE, \
-        __func__); \
-        exit(EXIT_FAILURE); }
+        __func__);}
 
 struct dataframe {
    char c[MAX_PFIX];

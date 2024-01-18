@@ -7,6 +7,7 @@
 #include <ctype.h>
 #include <stdbool.h>
 #include <assert.h>
+#include <unistd.h>
 #include "./Stack/stack.h"
 
 #define LONGEST_WORD 20
@@ -41,10 +42,9 @@
 
 
 #define strsame(A, B) (strcmp(A, B) == 0)
-#define ERROR(PHRASE) { fprintf(stderr, \
+#define ERROR(PHRASE) { fprintf(stdout, \
         "Interpretor Error: %s occurred in %s function\n", PHRASE, \
-        __func__); \
-        exit(EXIT_FAILURE); }
+        __func__);}
 
 struct program {
     char word[LONGEST_WORD];
@@ -91,7 +91,7 @@ bool col(program** prog, turtle** t);
 
 bool loop(program** prog, turtle** t);
 
-bool ltr(program** prog);
+bool ltr(program** prog, bool isvar);
 
 bool var(program** prog, turtle** t);
 
@@ -143,7 +143,7 @@ bool turtle_free(turtle* start);
 
 bool set_var(char var, char val[MAX_PFIX], turtle** t);
 
-void calc_pfix(char result[MAX_PFIX], char v1[MAX_PFIX], char v2[MAX_PFIX], char op);
+bool calc_pfix(char result[MAX_PFIX], char v1[MAX_PFIX], char v2[MAX_PFIX], char op);
 
 bool var_get(char var[LONGEST_WORD], turtle** t);
 
@@ -159,10 +159,12 @@ double new_ps_x(turtle* t, double n);
 
 void turtle_to_ps(turtle* t, FILE* ps_output);
 
-void set_ps_colour(char colour, FILE* ps_output);
+bool set_ps_colour(char colour, FILE* ps_output);
 
 bool turtle_moves(turtle* t);
 
 bool get_file_ext(char* fname, char file_ext[MAX_EXT]);
 
 void ps_to_pdf(char fname[MAX_DIR]);
+
+void buff_reset(char buffer[BUFSIZ]);
