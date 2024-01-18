@@ -696,7 +696,7 @@ void calc_pfix(char result[MAX_PFIX], char v1[MAX_PFIX], char v2[MAX_PFIX], char
             res_int = x1 * x2;
             break;
         default:
-               fprintf(stderr, "Can't understand that ? %c\n", op);
+               fprintf(stderr, "Can't understand that operator: %c\n", op);
                exit(EXIT_FAILURE);
     }
     sprintf(result, "%lf", res_int);
@@ -708,7 +708,7 @@ bool var_get(char var[LONGEST_WORD], turtle** t)
     int row = var[1] - ASCII_A;
 
     if((*t)->variables[row][0] == '\0'){
-        ERROR("Attempting to access unassigned variable\n");
+        ERROR("Attempting to access unassigned variable");
         return false;
     }
 

@@ -42,8 +42,8 @@
 
 #define strsame(A, B) (strcmp(A, B) == 0)
 #define ERROR(PHRASE) { fprintf(stderr, \
-        "Fatal Error %s occurred in %s, line %d\n", PHRASE, \
-        __FILE__, __LINE__); \
+        "Interpretor Error: %s occurred in %s function\n", PHRASE, \
+        __func__); \
         exit(EXIT_FAILURE); }
 
 struct program {
