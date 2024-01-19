@@ -16,7 +16,7 @@ interp_s: Interp/interp.h Interp/interp.c neillsimplescreen.c neillsimplescreen.
 
 ### An example : you may wish to adapt this slightly
 extension_s: Extension/extension.h Extension/extension.c
-	$(CC) Extension/extension.c -o extension_s -I./Extension $(COMMON) $(SDL) -lm
+	$(CC) Extension/extension.c -o extension_s -I./Extension $(SANITIZE) $(SDL) -lm
 
 run: all
 	./parse_s TTLs/empty.ttl

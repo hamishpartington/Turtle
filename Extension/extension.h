@@ -29,16 +29,22 @@
 #define PI 3.14159265
 #define SEMI_CIRC 180
 #define RAD PI/SEMI_CIRC
+#define MAX_INS 20
+#define ARGS 2;
 
 struct lines {
     double x;
     double y;
     char colour;
     double facing;
+    char instruct[MAX_INS];
+    double val;
     struct lines* previous;
     struct lines* next;
 };
 typedef struct lines lines;
+
+#define strsame(A, B) (strcmp(A, B) == 0)
 
 int SDL_display_turtle(lines *l);
 
@@ -68,5 +74,5 @@ void render_line(lines* start, SDL_Renderer *renderer);
 
 void set_colour(SDL_Renderer *renderer, char colour);
 
-//void SDL_make_board(SDL_Renderer* renderer);
+void output_ttl(lines* start);
 

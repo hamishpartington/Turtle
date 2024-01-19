@@ -1,10 +1,10 @@
 #include "extension.h"
 
-int main(void)
+int main (void)
 {
-
     lines *start = init_lines();
     SDL_display_turtle(start);
+    output_ttl(start);
     lines_free(start);
 
     return EXIT_SUCCESS;
@@ -38,11 +38,6 @@ int SDL_display_turtle(lines* start)
     turtle.h = SIDELENGTH;
     turtle.x = START_X;
     turtle.y = START_Y;
- 
-    // SDL_Point points[MAX_POINTS];
-    // points[0].x = START_X + ADJUST;
-    // points[0].y = START_Y;
-    // int pn = 0;
 
     bool quit = false;
 
@@ -72,6 +67,10 @@ int SDL_display_turtle(lines* start)
         }
 
     }
+    //add END to program
+    advance_line(&l);
+    set_prev_values(&l);
+    strcpy(l->instruct, "END");
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
@@ -85,6 +84,8 @@ lines* init_lines(void)
     l->y = START_Y;
     l->colour = 'W';
     l->facing = PI/2;
+    strcpy(l->instruct, "START");
+    l->val = 0;
 
     return l;
 }
@@ -98,6 +99,8 @@ SDL_Rect move_turtle(lines **l, int key_inp, SDL_Rect turtle)
         (*l)->y = new_y(*l, -MOVE_DIST);
         turtle.y = (*l)->y;
         turtle.x = (*l)->x;
+        strcpy((*l)->instruct, "FORWARD");
+        (*l)->val = 1;
     }else if (key_inp == SDLK_DOWN){
         advance_line(l);
         set_prev_values(l);
@@ -105,46 +108,60 @@ SDL_Rect move_turtle(lines **l, int key_inp, SDL_Rect turtle)
         (*l)->y = new_y(*l, MOVE_DIST);
         turtle.y = (*l)->y;
         turtle.x = (*l)->x;
-    }else if (key_inp== SDLK_LEFT){
+        strcpy((*l)->instruct, "FORWARD");
+        (*l)->val = -1;
+    }else if (key_inp == SDLK_LEFT){
         advance_line(l);
         set_prev_values(l);
         (*l)->facing = facing_adjust(((*l)->previous->facing + RAD));
+        strcpy((*l)->instruct, "RIGHT");
+        (*l)->val = -1;
     }else if (key_inp == SDLK_RIGHT){
         advance_line(l);
         set_prev_values(l);
         (*l)->facing = facing_adjust(((*l)->previous->facing - RAD));
+        strcpy((*l)->instruct, "RIGHT");
+        (*l)->val = 1;
     }else if (key_inp == SDLK_w){
         advance_line(l);
         set_prev_values(l);
         (*l)->colour = 'W';
+        strcpy((*l)->instruct, "COLOUR \"WHITE\"");
     }else if (key_inp == SDLK_c){
         advance_line(l);
         set_prev_values(l);
         (*l)->colour = 'C';
+        strcpy((*l)->instruct, "COLOUR \"CYAN\"");
     }else if (key_inp == SDLK_k){
         advance_line(l);
         set_prev_values(l);
         (*l)->colour = 'K';
+        strcpy((*l)->instruct, "COLOUR \"BLACK\"");
     }else if (key_inp == SDLK_b){
         advance_line(l);
         set_prev_values(l);
         (*l)->colour = 'B';
+        strcpy((*l)->instruct, "COLOUR \"BLUE\"");
     }else if (key_inp == SDLK_r){
         advance_line(l);
         set_prev_values(l);
         (*l)->colour = 'R';
+        strcpy((*l)->instruct, "COLOUR \"RED\"");
     }else if (key_inp == SDLK_m){
         advance_line(l);
         set_prev_values(l);
         (*l)->colour = 'M';
+        strcpy((*l)->instruct, "COLOUR \"MAGENTA\"");
     }else if (key_inp == SDLK_g){
         advance_line(l);
         set_prev_values(l);
         (*l)->colour = 'G';
+        strcpy((*l)->instruct, "COLOUR \"GREEN\"");
     }else if (key_inp == SDLK_y){
         advance_line(l);
         set_prev_values(l);
         (*l)->colour = 'Y';
+        strcpy((*l)->instruct, "COLOUR \"YELLOW\"");
     }
     return turtle;
 }
@@ -324,38 +341,29 @@ void set_colour(SDL_Renderer *renderer, char colour)
         break;
     }
 }
-// void SDL_make_board(SDL_Renderer* renderer)
-// {
-//   SDL_Rect square = {0, 0, CHECKER_SIZE, CHECKER_SIZE};
-//   SDL_Rect queen  = {QUEEN_OFFSET, QUEEN_OFFSET, QUEEN_SIZE, QUEEN_SIZE};
-//   bool white = true;
-//   int qy;
 
-//   for(int i = 0; i < n; i++){
-//     for(int j = 0; j < n; j++){
-//       if(!white){
-//         SDL_SetRenderDrawColor(renderer, BLACK, OPAQUE);
-//       }else{
-//         SDL_SetRenderDrawColor(renderer, WHITE, OPAQUE);
-//       }
-//       SDL_RenderFillRect(renderer, &square);
-
-//       if((sol[i] - 1 == j)){
-//       //red queen
-//         SDL_SetRenderDrawColor(renderer, RED, OPAQUE);
-//         qy = j*CHECKER_SIZE + QUEEN_OFFSET;
-//         queen.y = qy;
-//         SDL_RenderFillRect(renderer, &queen);
-//       }
-//       square.y += CHECKER_SIZE;
-//       /*alternate black white squares except for when starting new column on
-//         boards where n is even*/
-//       if(!(j == (n-ADJUST) && n % EVEN == 0)){
-//         white = !white;
-//       }
-//     }
-//     square.y = 0;
-//     square.x += CHECKER_SIZE;
-//     queen.x += CHECKER_SIZE;
-//   }
-// }
+void output_ttl(lines* start)
+{
+    FILE* output = fopen("Extension/SDL_output.ttl", "w+");
+    lines* l = start;
+    fprintf(output, "%s\n", start->instruct);
+    //to optimise
+    while(l->next){
+        l = l->next;
+        if(strsame(l->instruct, l->previous->instruct)){
+            l->val += l->previous->val;
+        }
+        if(!strsame(l->instruct, l->next->instruct)){
+           if(l->instruct[0] == 'C'){
+                fprintf(output, "%s\n", l->instruct);
+           }else{
+                fprintf(output, "%s %f\n",l->instruct, l->val);
+           }
+        }
+        if(strsame("END", l->next->instruct)){
+            l = l->next;
+            fprintf(output, "%s\n", l->instruct);
+        }
+    }
+    fclose(output);
+}
