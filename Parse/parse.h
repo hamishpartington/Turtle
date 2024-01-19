@@ -72,3 +72,4 @@ bool isop(program** prog);
 bool op(program** prog);
 
 void buff_reset(char buffer[BUFSIZ]);
+
