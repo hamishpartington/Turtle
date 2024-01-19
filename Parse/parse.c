@@ -162,6 +162,12 @@ bool loop(program** prog)
         return false;
     }
     *prog = (*prog)->next;
+    
+    bool pass = check_for_loop_end(*prog);
+    if(!pass){
+        return false;
+    }
+
     return inlist(prog);
 }
 
@@ -315,6 +321,34 @@ bool word(program** prog)
     }
     return true;
 }
+
+bool check_for_loop_end(program* prog){
+    int offset = 0;
+    while(!strsame(prog->word, "END") || offset != 0){
+        if(strsame(prog->word, "")){
+            ERROR("LOOP has no END");
+            return false;
+        }
+        if(strsame(prog->word, "LOOP")){
+            offset++;
+        }
+        prog = prog->next;
+        if(strsame(prog->word, "END") && strsame(prog->next->word, "")){
+            ERROR("LOOP has no END");
+            return false;
+        }
+        if(strsame(prog->word, "END") && offset > 0){
+            offset--;
+            prog = prog->next;
+        }
+        if(strsame(prog->word, "END") && strsame(prog->next->word, "")){
+            ERROR("LOOP has no END");
+            return false;
+        }
+    }
+    return true;
+}
+
 
 void buff_reset(char buffer[BUFSIZ])
 {
