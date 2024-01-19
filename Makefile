@@ -1,9 +1,10 @@
-CC=clang
-COMMON= -Wall -Wextra -Wfloat-equal -Wpedantic -Wvla -std=c99 -Werror
+CC=gcc
+COMMON= -Wall -Wextra -Wfloat-equal -Wpedantic -Wvla -std=c99 #-Werror
 DEBUG= -g3
 SANITIZE= $(COMMON) -fsanitize=undefined -fsanitize=address $(DEBUG)
 VALGRIND= $(COMMON) $(DEBUG)
 PRODUCTION= $(COMMON) -O3
+SDL= `pkg-config sdl2 --cflags` `pkg-config sdl2 --libs`
 
 all: parse_s interp_s
 
@@ -14,8 +15,8 @@ interp_s: Interp/interp.h Interp/interp.c neillsimplescreen.c neillsimplescreen.
 	$(CC) neillsimplescreen.c Interp/interp.c Interp/Stack/stack.c -o interp_s -I./Interp $(SANITIZE) -lm
 
 ### An example : you may wish to adapt this slightly
-extension_s: Extension/extension.h Extension/extension.c neillsimplescreen.c neillsimplescreen.h
-	$(CC) neillsimplescreen.c Extension/extension.c -o extension_s -I./Extension $(SANITIZE) -lm
+extension_s: Extension/extension.h Extension/extension.c
+	$(CC) Extension/extension.c -o extension_s -I./Extension $(COMMON) $(SDL) -lm
 
 run: all
 	./parse_s TTLs/empty.ttl
