@@ -7,7 +7,7 @@ int main(void)
     SDL_display_turtle(start);
     lines_free(start);
 
-    return 1;
+    return EXIT_SUCCESS;
 }
 
 int SDL_display_turtle(lines* start)
