@@ -40,8 +40,14 @@ comp_pdf.sh. For all pdf files, comparepdf output "No differences detected". It
 is therefore reasonable to conclude that the interpreter and postscript functions
 are working correctly. In the same shell script, I used diff to compare my .txt
 outputs to Neill's. Here, there were some differences between some files. These
-were however, very subtle and (given that our .pdf outputs are the same) likely 
-caused subtle differences in the approximations I used in order to render lines 
-with letters in .txt format
+were however, very subtle, usually off by 1 character to the right or left,
+ and (given that our .pdf outputs are the same) likely caused subtle differences 
+ in the approximations I used in order to render lines with letters in .txt format
+ The results of running the shell script are saved in "Testing/comp_pdf_out.txt"
 
+//Extension
+The extension did not require extesnive testing as it used functions which had
+already been tested as part of the interpreter and SDL functions which cannot be
+tested. It behaved as expected within the SDL window in response to key inputs
+and output the same image drawn in SDL as a pdf appropriately.
 

@@ -66,7 +66,7 @@ int SDL_display_turtle(lines* start)
             if(e.type == SDL_KEYDOWN){
                 turtle = move_turtle(&l, e.key.keysym.sym, turtle);
             }
-        SDL_SetRenderDrawColor(renderer, DARK_GREEN, OPAQUE);
+        SDL_SetRenderDrawColor(renderer, RGB_DARK_GREEN, OPAQUE);
         SDL_RenderFillRect(renderer, &turtle);
         render_line(start, renderer);
         SDL_SetRenderTarget(renderer, NULL);
@@ -74,7 +74,7 @@ int SDL_display_turtle(lines* start)
         SDL_RenderPresent(renderer);
         SDL_SetRenderTarget(renderer, display);
         
-        SDL_SetRenderDrawColor(renderer, WHITE, OPAQUE);
+        SDL_SetRenderDrawColor(renderer, RGB_WHITE, OPAQUE);
         SDL_RenderClear(renderer);
         
         }
@@ -95,8 +95,8 @@ lines* init_lines(void)
     lines* l = (lines*)neill_calloc(1, sizeof(lines));
     l->x = START_X;
     l->y = START_Y;
-    l->colour = 'W';
-    l->facing = PI/2;
+    l->colour = WHITE;
+    l->facing = HALF_PI;
     strcpy(l->instruct, "START");
     l->val = 0;
 
@@ -138,42 +138,42 @@ SDL_Rect move_turtle(lines **l, int key_inp, SDL_Rect turtle)
     }else if (key_inp == SDLK_w){
         advance_line(l);
         set_prev_values(l);
-        (*l)->colour = 'W';
+        (*l)->colour = WHITE;
         strcpy((*l)->instruct, "COLOUR \"WHITE\"");
     }else if (key_inp == SDLK_c){
         advance_line(l);
         set_prev_values(l);
-        (*l)->colour = 'C';
+        (*l)->colour = CYAN;
         strcpy((*l)->instruct, "COLOUR \"CYAN\"");
     }else if (key_inp == SDLK_k){
         advance_line(l);
         set_prev_values(l);
-        (*l)->colour = 'K';
+        (*l)->colour = BLACK;
         strcpy((*l)->instruct, "COLOUR \"BLACK\"");
     }else if (key_inp == SDLK_b){
         advance_line(l);
         set_prev_values(l);
-        (*l)->colour = 'B';
+        (*l)->colour = BLUE;
         strcpy((*l)->instruct, "COLOUR \"BLUE\"");
     }else if (key_inp == SDLK_r){
         advance_line(l);
         set_prev_values(l);
-        (*l)->colour = 'R';
+        (*l)->colour = RED;
         strcpy((*l)->instruct, "COLOUR \"RED\"");
     }else if (key_inp == SDLK_m){
         advance_line(l);
         set_prev_values(l);
-        (*l)->colour = 'M';
+        (*l)->colour = MAGENTA;
         strcpy((*l)->instruct, "COLOUR \"MAGENTA\"");
     }else if (key_inp == SDLK_g){
         advance_line(l);
         set_prev_values(l);
-        (*l)->colour = 'G';
+        (*l)->colour = GREEN;
         strcpy((*l)->instruct, "COLOUR \"GREEN\"");
     }else if (key_inp == SDLK_y){
         advance_line(l);
         set_prev_values(l);
-        (*l)->colour = 'Y';
+        (*l)->colour = YELLOW;
         strcpy((*l)->instruct, "COLOUR \"YELLOW\"");
     }
     return turtle;
@@ -202,14 +202,14 @@ bool lines_free(lines* start)
 double new_y(lines* l, double n)
 {
     double new_y;
-    if(l->facing <= PI/2){
+    if(l->facing <= HALF_PI){
         new_y = l->previous->y + opposite(n, l->facing);
     }else if(l->facing <= PI){
-        new_y = l->previous->y + adjacent(n, (l->facing - PI/2));
-    }else if(l->facing <= 1.5 * PI){
+        new_y = l->previous->y + adjacent(n, (l->facing - HALF_PI));
+    }else if(l->facing <= THREE_HALF_PI){
         new_y = l->previous->y - opposite(n, (l->facing - PI));
     }else{
-        new_y = l->previous->y - adjacent(n, (l->facing - 1.5*PI));
+        new_y = l->previous->y - adjacent(n, (l->facing - THREE_HALF_PI));
     }
     if(new_y > HEIGHT){
         return (new_y - HEIGHT);
@@ -223,14 +223,14 @@ double new_y(lines* l, double n)
 double new_x(lines* l, double n)
 {
     double new_x;
-    if(l->facing <= PI/2){
+    if(l->facing <= HALF_PI){
         new_x = l->previous->x - adjacent(n, l->facing);
     }else if(l->facing <= PI){
-        new_x = l->previous->x + opposite(n, (l->facing - PI/2));
-    }else if(l->facing <= 1.5 * PI){
+        new_x = l->previous->x + opposite(n, (l->facing - HALF_PI));
+    }else if(l->facing <= THREE_HALF_PI){
         new_x = l->previous->x + adjacent(n, (l->facing - PI));
     }else{
-        new_x = l->previous->x - opposite(n, (l->facing - 1.5*PI));
+        new_x = l->previous->x - opposite(n, (l->facing - THREE_HALF_PI));
     }
 
     if(new_x > WIDTH){
@@ -264,11 +264,11 @@ double adjacent(double hypotenuse, double theta)
 
 double facing_adjust(double facing)
 {
-    if(facing > (2*PI)){
-        facing = facing - (2*PI);
+    if(facing > (TWO_PI)){
+        facing = facing - (TWO_PI);
     }
     if(facing < 0 ){
-        facing = facing + (2*PI);
+        facing = facing + (TWO_PI);
     }
 
     return facing;
@@ -321,36 +321,36 @@ void set_colour(SDL_Renderer *renderer, char colour)
 
  switch (colour)
     {
-    case 'W':
-        SDL_SetRenderDrawColor(renderer, GREY, OPAQUE);
+    case WHITE:
+        SDL_SetRenderDrawColor(renderer, RGB_GREY, OPAQUE);
         break;
 
-    case 'B':
-        SDL_SetRenderDrawColor(renderer, BLUE, OPAQUE);
+    case BLUE:
+        SDL_SetRenderDrawColor(renderer, RGB_BLUE, OPAQUE);
         break;
 
-    case 'K':
-        SDL_SetRenderDrawColor(renderer, BLACK, OPAQUE);
+    case BLACK:
+        SDL_SetRenderDrawColor(renderer, RGB_BLACK, OPAQUE);
         break;
 
-    case 'C':
-        SDL_SetRenderDrawColor(renderer, CYAN, OPAQUE);
+    case CYAN:
+        SDL_SetRenderDrawColor(renderer, RGB_CYAN, OPAQUE);
         break;
 
-    case 'Y':
-        SDL_SetRenderDrawColor(renderer, YELLOW, OPAQUE);
+    case YELLOW:
+        SDL_SetRenderDrawColor(renderer, RGB_YELLOW, OPAQUE);
         break;
 
-    case 'G':
-        SDL_SetRenderDrawColor(renderer, GREEN, OPAQUE);
+    case GREEN:
+        SDL_SetRenderDrawColor(renderer, RGB_GREEN, OPAQUE);
         break;
 
-    case 'R':
-        SDL_SetRenderDrawColor(renderer, RED, OPAQUE);
+    case RED:
+        SDL_SetRenderDrawColor(renderer, RGB_RED, OPAQUE);
         break;
 
-    case 'M':
-        SDL_SetRenderDrawColor(renderer, MAGENTA, OPAQUE);
+    case MAGENTA:
+        SDL_SetRenderDrawColor(renderer, RGB_MAGENTA, OPAQUE);
         break;
     }
 }
@@ -367,7 +367,7 @@ void output_ttl(lines* start)
             l->val += l->previous->val;
         }
         if(!strsame(l->instruct, l->next->instruct)){
-           if(l->instruct[0] == 'C'){
+           if(l->instruct[0] == COLOUR){
                 fprintf(output, "%s\n", l->instruct);
            }else{
                 fprintf(output, "%s %f\n",l->instruct, l->val);

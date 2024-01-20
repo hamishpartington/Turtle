@@ -10,20 +10,20 @@
 
 #define HEIGHT 660
 #define WIDTH 1020
-#define BLACK 0,0,0
-#define WHITE 255,255,255
-#define RED 255,0,0
-#define GREEN 0,255,0
-#define BLUE 0,0,255
-#define GREY 200,200,200
-#define CYAN 0,255,255
-#define MAGENTA 255,0,255
-#define YELLOW 255,255,0
+#define RGB_BLACK 0,0,0
+#define RGB_WHITE 255,255,255
+#define RGB_RED 255,0,0
+#define RGB_GREEN 0,255,0
+#define RGB_BLUE 0,0,255
+#define RGB_GREY 200,200,200
+#define RGB_CYAN 0,255,255
+#define RGB_MAGENTA 255,0,255
+#define RGB_YELLOW 255,255,0
 #define OPAQUE 255
 #define START_X WIDTH/2
 #define START_Y HEIGHT/2
 #define SIDELENGTH 10
-#define DARK_GREEN 1,50,32
+#define RGB_DARK_GREEN 1,50,32
 #define MAX_POINTS 1000
 #define MOVE_DIST 20
 #define PI 3.14159265
@@ -32,6 +32,18 @@
 #define MAX_INS 20
 #define ARGS 2
 #define MAX_COMMAND 100
+#define TWO_PI 2*PI
+#define HALF_PI PI/2
+#define THREE_HALF_PI PI*1.5
+#define BLUE 'B'
+#define BLACK 'K'
+#define RED 'R'
+#define CYAN 'C'
+#define GREEN 'G'
+#define MAGENTA 'M'
+#define YELLOW 'Y'
+#define WHITE 'W'
+#define COLOUR 'C'
 
 struct lines {
     double x;
