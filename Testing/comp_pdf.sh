@@ -3,6 +3,9 @@
 # Set the path to the two repositories
 repo1="../Results"
 repo2="../Neill_Results"
+LOG_FILE="comp_pdf_out.txt"
+
+exec 3>&1 1>>${LOG_FILE} 2>&1
 
 # Loop through all files in repo1
 for file in "$repo1"/*.pdf
