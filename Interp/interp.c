@@ -263,13 +263,13 @@ bool var(program** prog, turtle** t)
 
     double rad, n = atof(var);
 
-    if((*prog)->previous->word[0] == 'R'){
+    if((*prog)->previous->word[0] == RIGHT){
         rad = deg_to_radians(n);
         advance_turtle(t);
         set_prev_values(t);
         (*t)->facing = (*t)->previous->facing + rad;
         (*t)->facing = facing_adjust((*t)->facing);
-    }else if((*prog)->previous->word[0] == 'F'){
+    }else if((*prog)->previous->word[0] == FORWARD){
         advance_turtle(t);
         set_prev_values(t);
         (*t)->row = new_row(*t, n);
@@ -285,11 +285,11 @@ bool var(program** prog, turtle** t)
 bool ltr(program** prog, bool isvar)
 {
     int len = strlen((*prog)->word);
-    if(len > 2){
+    if(len > VAR_LEN){
             ERROR("Expecting LTR (string too long)");
             return false;
     }
-    if(isvar && len == 2){
+    if(isvar && len == VAR_LEN){
         if(!isupper((*prog)->word[1])){
             ERROR("Expecting LTR");
             return false;
@@ -323,7 +323,7 @@ bool items(program** prog, turtle** t, int i, char loop_var_list[MAX_LOOPS][LONG
     if(!item(prog, t)){
         return false;
     }
-    if((*prog)->word[0] == '$'){
+    if((*prog)->word[0] == VAR){
         strcpy(loop_var_list[i], (*t)->variables[((*prog)->word[1] - ASCII_A)]);
     }else{
         strcpy(loop_var_list[i], (*prog)->word);
@@ -335,7 +335,7 @@ bool items(program** prog, turtle** t, int i, char loop_var_list[MAX_LOOPS][LONG
 
 bool item(program** prog, turtle** t)
 {
-    if((*prog)->word[0] == '"'){
+    if((*prog)->word[0] == WORD){
         return word(prog);
     }else{
         return varnum(prog, t);
@@ -344,9 +344,9 @@ bool item(program** prog, turtle** t)
 
 bool varnum(program** prog, turtle** t)
 {
-    if((*prog)->word[0] == '$'){
+    if((*prog)->word[0] == VAR){
         return var(prog, t);
-    }else if(isdigit((*prog)->word[0]) || (*prog)->word[0] == '-'){
+    }else if(isdigit((*prog)->word[0]) || (*prog)->word[0] == NEGATIVE){
         return num(prog, t);
     }else{
         ERROR("Expecting VARNUM");
@@ -363,13 +363,13 @@ bool num(program** prog, turtle** t)
         return false;
     }
 
-    if((*prog)->previous->word[0] == 'R'){
+    if((*prog)->previous->word[0] == RIGHT){
         rad = deg_to_radians(n);
         advance_turtle(t);
         set_prev_values(t);
         (*t)->facing = (*t)->previous->facing + rad;
         (*t)->facing = facing_adjust((*t)->facing);
-    }else if((*prog)->previous->word[0] == 'F'){
+    }else if((*prog)->previous->word[0] == FORWARD){
         advance_turtle(t);
         set_prev_values(t);
         (*t)->row = new_row(*t, n);
@@ -415,10 +415,10 @@ bool pfix(program** prog, turtle** t, stack* pfix_stack)
         }
         pass = stack_pop(pfix_stack, v2);
         pass = (pass && stack_pop(pfix_stack, v1));
-        if(v1[0] == '$'){
+        if(v1[0] == VAR){
             pass = (pass && var_get(v1, t));
         }
-        if(v2[0] == '$'){
+        if(v2[0] == VAR){
             pass = (pass && var_get(v2, t));
         }
         pass = (pass && calc_pfix(result, v1, v2, (*prog)->word[0]));
@@ -459,7 +459,7 @@ bool op(program** prog)
 bool word(program** prog)
 {
     int len = strlen((*prog)->word);
-    if((*prog)->word[0] != '"' || (*prog)->word[(len - 1)] != '"'){
+    if((*prog)->word[0] != WORD || (*prog)->word[(len - 1)] != WORD){
         ERROR("Expecting WORD");
         return false;
     }
@@ -497,11 +497,11 @@ double deg_to_radians(double deg)
 
 double facing_adjust(double facing)
 {
-    if(facing > (2*PI)){
-        facing = facing - (2*PI);
+    if(facing > (TWO_PI)){
+        facing = facing - (TWO_PI);
     }
     if(facing < 0 ){
-        facing = facing + (2*PI);
+        facing = facing + (TWO_PI);
     }
 
     return facing;
@@ -510,14 +510,14 @@ double facing_adjust(double facing)
 int new_row(turtle* t, double n)
 {
     int new_row;
-    if(t->facing <= PI/2){
+    if(t->facing <= HALF_PI){
         new_row = t->previous->row - (int)round(opposite(n, t->facing));
     }else if(t->facing <= PI){
-        new_row = t->previous->row - (int)round(adjacent(n, (t->facing - PI/2)));
-    }else if(t->facing <= 1.5 * PI){
+        new_row = t->previous->row - (int)round(adjacent(n, (t->facing - HALF_PI)));
+    }else if(t->facing <= THREE_HALF_PI){
         new_row = t->previous->row + (int)round(opposite(n, (t->facing - PI)));
     }else{
-        new_row = t->previous->row + (int)round(adjacent(n, (t->facing - 1.5*PI)));
+        new_row = t->previous->row + (int)round(adjacent(n, (t->facing - THREE_HALF_PI)));
     }
 
     return new_row;
@@ -526,14 +526,14 @@ int new_row(turtle* t, double n)
 int new_column(turtle* t, double n)
 {
     int new_col;
-    if(t->facing <= PI/2){
+    if(t->facing <= HALF_PI){
         new_col = t->previous->column - (int)round(adjacent(n, t->facing));
     }else if(t->facing <= PI){
-        new_col = t->previous->column + (int)round(opposite(n, (t->facing - PI/2)));
-    }else if(t->facing <= 1.5 * PI){
+        new_col = t->previous->column + (int)round(opposite(n, (t->facing - HALF_PI)));
+    }else if(t->facing <= THREE_HALF_PI){
         new_col = t->previous->column + (int)round(adjacent(n, (t->facing - PI)));
     }else{
-        new_col = t->previous->column - (int)round(opposite(n, (t->facing - 1.5*PI)));
+        new_col = t->previous->column - (int)round(opposite(n, (t->facing - THREE_HALF_PI)));
     }
 
     return new_col;
@@ -542,14 +542,14 @@ int new_column(turtle* t, double n)
 double new_ps_y(turtle* t, double n)
 {
     double new_ps_y;
-    if(t->facing <= PI/2){
+    if(t->facing <= HALF_PI){
         new_ps_y = t->previous->ps_y + opposite(n, t->facing);
     }else if(t->facing <= PI){
-        new_ps_y = t->previous->ps_y + adjacent(n, (t->facing - PI/2));
-    }else if(t->facing <= 1.5 * PI){
+        new_ps_y = t->previous->ps_y + adjacent(n, (t->facing - HALF_PI));
+    }else if(t->facing <= THREE_HALF_PI){
         new_ps_y = t->previous->ps_y - opposite(n, (t->facing - PI));
     }else{
-        new_ps_y = t->previous->ps_y - adjacent(n, (t->facing - 1.5*PI));
+        new_ps_y = t->previous->ps_y - adjacent(n, (t->facing - THREE_HALF_PI));
     }
 
     return new_ps_y;
@@ -558,14 +558,14 @@ double new_ps_y(turtle* t, double n)
 double new_ps_x(turtle* t, double n)
 {
     double new_ps_x;
-    if(t->facing <= PI/2){
+    if(t->facing <= HALF_PI){
         new_ps_x = t->previous->ps_x - adjacent(n, t->facing);
     }else if(t->facing <= PI){
-        new_ps_x = t->previous->ps_x + opposite(n, (t->facing - PI/2));
-    }else if(t->facing <= 1.5 * PI){
+        new_ps_x = t->previous->ps_x + opposite(n, (t->facing -HALF_PI));
+    }else if(t->facing <= THREE_HALF_PI){
         new_ps_x = t->previous->ps_x + adjacent(n, (t->facing - PI));
     }else{
-        new_ps_x = t->previous->ps_x - opposite(n, (t->facing - 1.5*PI));
+        new_ps_x = t->previous->ps_x - opposite(n, (t->facing - THREE_HALF_PI));
     }
 
     return new_ps_x;
@@ -590,11 +590,19 @@ double adjacent(double hypotenuse, double theta)
     return adjacent;
 }
 
+bool in_bounds(int row, int col)
+{
+    if(row < HEIGHT && row >=0 && col < WIDTH && col >= 0){
+        return true;
+    }
+    return false;
+}
+
 void turtle_to_array(turtle* t, char array[HEIGHT][WIDTH], bool console)
 {
     double sx, sy, ex, ey;
     while(t->next){      
-        if(t->row < HEIGHT && t->row >= 0 && t->column < WIDTH && t->column >= 0){
+        if(in_bounds(t->row, t->column)){
             array[t->row][t->column] = t->colour;
         }
         sy = t->row;
@@ -647,28 +655,28 @@ void change_col(char c)
 {
     switch (c)
     {
-    case 'K':
+    case BLACK:
         neillfgcol(black);
         break;
-    case 'R':
+    case RED:
         neillfgcol(red);
         break;
-    case 'G':
+    case GREEN:
         neillfgcol(green);
         break;
-    case 'Y':
+    case YELLOW:
         neillfgcol(yellow);
         break;
-    case 'B':
+    case BLUE:
         neillfgcol(blue);
         break;
-    case 'M':
+    case MAGENTA:
         neillfgcol(magenta);
         break;
-    case 'C':
+    case CYAN:
         neillfgcol(cyan);
         break;
-    case 'W':
+    case WHITE:
         neillfgcol(white);
         break;
     default:
@@ -678,9 +686,9 @@ void change_col(char c)
 
 turtle* init_turtle(void){
     turtle* t = (turtle*)neill_calloc(1, sizeof(turtle));
-    t->colour = 'W';
+    t->colour = WHITE;
     t->column = START_COLUMN;
-    t->facing = PI/2;
+    t->facing = HALF_PI;
     t->row = START_ROW;
     t->ps_x = PS_X_START;
     t->ps_y = PS_Y_START;
@@ -706,16 +714,16 @@ bool calc_pfix(char result[MAX_PFIX], char v1[MAX_PFIX], char v2[MAX_PFIX], char
     x2 = atof(v2);
 
     switch(op){
-        case '+':
+        case ADD:
             res_int = x1 + x2;
             break;
-        case '-':
+        case NEGATIVE:
             res_int = x1 - x2;
             break;
-        case '/':
+        case DIVIDE:
             res_int = x1 / x2;
             break;
-        case '*':
+        case MULTIPLY:
             res_int = x1 * x2;
             break;
         default:
@@ -753,21 +761,21 @@ bool set_col(turtle** t, char word[LONGEST_WORD], bool is_var){
     }
 
     if(strsame(colour, "\"RED\"")){
-        (*t)->colour = 'R';
+        (*t)->colour = RED;
     }else if(strsame(colour, "\"CYAN\"")){
-        (*t)->colour = 'C';
+        (*t)->colour = CYAN;
     }else if(strsame(colour, "\"GREEN\"")){
-        (*t)->colour = 'G';
+        (*t)->colour = GREEN;
     }else if(strsame(colour, "\"BLUE\"")){
-        (*t)->colour = 'B';
+        (*t)->colour = BLUE;
     }else if(strsame(colour, "\"YELLOW\"")){
-        (*t)->colour = 'Y';
+        (*t)->colour = YELLOW;
     }else if(strsame(colour, "\"MAGENTA\"")){
-        (*t)->colour = 'M';
+        (*t)->colour = MAGENTA;
     }else if(strsame(colour, "\"BLACK\"")){
-        (*t)->colour = 'K';
+        (*t)->colour = BLACK;
     }else if(strsame(colour, "\"WHITE\"")){
-        (*t)->colour = 'W';
+        (*t)->colour = WHITE;
     }else{
         fprintf(stdout, "Interpretor Error: %s is not a valid colour in %s function\n", 
         colour, __func__);
@@ -782,7 +790,7 @@ void line_draw(char array[HEIGHT][WIDTH], double sx, double sy, double ex, doubl
 
     dx = ex - sx;
     dy = ey - sy;
-    dist = sqrt((pow(dx, 2) + pow(dy, 2)));
+    dist = sqrt((pow(dx, SQUARE) + pow(dy, SQUARE)));
     distdx = dx/dist;
     distdy = dy/dist;
 
@@ -790,7 +798,7 @@ void line_draw(char array[HEIGHT][WIDTH], double sx, double sy, double ex, doubl
         for(int i = 0; i <= (int)round(dist); i++){
             nx = round(sx + (distdx*i));
             ny = round(sy + (distdy*i));
-            if((int)ny < HEIGHT && (int)ny >= 0 && (int)nx < WIDTH && (int)nx >= 0){
+            if(in_bounds((int)ny, (int)nx)){
                 array[(int)ny][(int)nx] = colour;
             }
         }
@@ -820,35 +828,35 @@ bool set_ps_colour(char colour, FILE* ps_output)
 {
     switch (colour)
     {
-    case 'W':
+    case WHITE:
         fprintf(ps_output, "%s setrgbcolor\n", RGB_WHITE);
         return true;
 
-    case 'B':
+    case BLUE:
         fprintf(ps_output, "%s setrgbcolor\n", RGB_BLUE);
         return true;
 
-    case 'K':
+    case BLACK:
         fprintf(ps_output, "%s setrgbcolor\n", RGB_BLACK);
         return true;
 
-    case 'C':
+    case CYAN:
         fprintf(ps_output, "%s setrgbcolor\n", RGB_CYAN);
         return true;
 
-    case 'Y':
+    case YELLOW:
         fprintf(ps_output, "%s setrgbcolor\n", RGB_YELLOW);
         return true;
 
-    case 'G':
+    case GREEN:
         fprintf(ps_output, "%s setrgbcolor\n", RGB_GREEN);
         return true;
 
-    case 'R':
+    case RED:
         fprintf(ps_output, "%s setrgbcolor\n", RGB_RED);
         return true;
 
-    case 'M':
+    case MAGENTA:
         fprintf(ps_output, "%s setrgbcolor\n", RGB_MAGENTA);
         return true;
     default:
@@ -881,7 +889,7 @@ bool get_file_ext(char* fname, char file_ext[MAX_EXT])
             file_ext[j] = fname[i];
             j++;
         }
-        if(fname[i] == '.'){
+        if(fname[i] == EXT){
             ext = true;
         }
     }
@@ -898,7 +906,7 @@ void ps_to_pdf(char fname[MAX_DIR])
             fname[i] = pdf[j];
             j++;
         }
-        if(fname[i] == '.'){
+        if(fname[i] == EXT){
             ext = true;
         }
     }
@@ -1064,7 +1072,6 @@ void test(void)
     assert(turtle_free(t_start));
     fclose(f);
 
-    // testing loops
     f = fopen("Testing/Test_TTLs/fail_interp_loop2.ttl", "r");
     p = build_program(f);
     start = p; 
@@ -1092,6 +1099,7 @@ void test(void)
     assert(prog_free(start));
     assert(turtle_free(t_start));
     fclose(f);
+
 
 
 

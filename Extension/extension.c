@@ -1,11 +1,24 @@
 #include "extension.h"
 
-int main (void)
+int main (int argc, char** argv)
 {
+
+    if(argc > ARGS){
+        fprintf(stderr, "Usage: %s (<output_file>)\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
     lines *start = init_lines();
     SDL_display_turtle(start);
     output_ttl(start);
     lines_free(start);
+
+    if(argc == ARGS){
+        char system_command[MAX_COMMAND];
+        strcpy(system_command, "./interp Extension/SDL_output.ttl ");
+        strcat(system_command, argv[1]);
+        system(system_command);
+    }
 
     return EXIT_SUCCESS;
 }

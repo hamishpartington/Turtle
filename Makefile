@@ -6,17 +6,23 @@ VALGRIND= $(COMMON) $(DEBUG)
 PRODUCTION= $(COMMON) -O3
 SDL= `pkg-config sdl2 --cflags` `pkg-config sdl2 --libs`
 
-all: parse_s interp_s
+all: parse_s interp_s parse interp extension
 
 parse_s: Parse/parse.h Parse/parse.c
 	$(CC) Parse/parse.c -o parse_s -I./Parse $(SANITIZE) -lm
 
+parse: Parse/parse.h Parse/parse.c
+	$(CC) Parse/parse.c -o parse -I./Parse $(PRODUCTION) -lm
+
 interp_s: Interp/interp.h Interp/interp.c neillsimplescreen.c neillsimplescreen.h Interp/Stack/stack.c Interp/Stack/stack.h
 	$(CC) neillsimplescreen.c Interp/interp.c Interp/Stack/stack.c -o interp_s -I./Interp $(SANITIZE) -lm
 
+interp: Interp/interp.h Interp/interp.c neillsimplescreen.c neillsimplescreen.h Interp/Stack/stack.c Interp/Stack/stack.h
+	$(CC) neillsimplescreen.c Interp/interp.c Interp/Stack/stack.c -o interp -I./Interp $(PRODUCTION) -lm
+
 ### An example : you may wish to adapt this slightly
-extension_s: Extension/extension.h Extension/extension.c
-	$(CC) Extension/extension.c -o extension_s -I./Extension $(SANITIZE) $(SDL) -lm
+extension: Extension/extension.h Extension/extension.c
+	$(CC) Extension/extension.c -o extension -I./Extension $(PRODUCTION) $(SDL) -lm
 
 run: all
 	./parse_s TTLs/empty.ttl

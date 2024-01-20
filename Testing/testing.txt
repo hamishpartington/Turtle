@@ -19,7 +19,10 @@ scripts, I can check if each function is working as expected.
 /Testing the interpreter
 
 //Assert testing
-As with the parser, I carried out assert testing where possible
+As with the parser, I carried out assert testing where possible and also wrote 
+some test .ttl scripts designed to crash the interpreter but not the parser to 
+ensure additional interpreting fucntionality not already tested in the parser was 
+behaving as expected.
 
 ///Changes made
     -Realised that I needed to have a function to jump to the end of a loop if
@@ -27,6 +30,7 @@ As with the parser, I carried out assert testing where possible
     - Also wrote a similar function to be run for all loops which would check 
     if the loop had an end and if no end was found, it prints an errror
     message to the console.
+    - also added this function the the parser
 
 //Shell script comparing my outputs to Neill's outputs
 If my results where comparable to Neill's, I believed that it was reasonably 

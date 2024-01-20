@@ -39,7 +39,28 @@
 #define MAX_DIR 100
 #define PDF_LEN 4
 #define PRODUCTION 0
-
+#define FORWARD 'F'
+#define RIGHT 'R'
+#define VAR_LEN 2
+#define VAR '$'
+#define WORD '"'
+#define NEGATIVE '-'
+#define TWO_PI 2*PI
+#define HALF_PI PI/2
+#define THREE_HALF_PI PI*1.5
+#define BLUE 'B'
+#define BLACK 'K'
+#define RED 'R'
+#define CYAN 'C'
+#define GREEN 'G'
+#define MAGENTA 'M'
+#define YELLOW 'Y'
+#define WHITE 'W'
+#define ADD '+'
+#define MULTIPLY '*'
+#define DIVIDE '/'
+#define SQUARE 2
+#define EXT '.'
 
 #define strsame(A, B) (strcmp(A, B) == 0)
 #define ERROR(PHRASE) { fprintf(stdout, \
@@ -172,3 +193,5 @@ void buff_reset(char buffer[BUFSIZ]);
 bool skip_to_loop_end(program** prog);
 
 bool check_for_loop_end(program* prog);
+
+bool in_bounds(int row, int col);

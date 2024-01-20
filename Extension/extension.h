@@ -30,7 +30,8 @@
 #define SEMI_CIRC 180
 #define RAD PI/SEMI_CIRC
 #define MAX_INS 20
-#define ARGS 2;
+#define ARGS 2
+#define MAX_COMMAND 100
 
 struct lines {
     double x;

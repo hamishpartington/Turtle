@@ -136,9 +136,9 @@ bool rgt(program** prog)
 bool col(program** prog)
 {
     *prog = (*prog)->next;
-    if((*prog)->word[0] == '$'){
+    if((*prog)->word[0] == VAR){
         return var(prog);
-    }else if((*prog)->word[0] == '"'){
+    }else if((*prog)->word[0] == WORD){
         return word(prog);
     }else{
         ERROR("Expecting COL");
@@ -173,7 +173,7 @@ bool loop(program** prog)
 
 bool var(program** prog)
 {
-    if((*prog)->word[0] != '$'){
+    if((*prog)->word[0] != VAR){
         ERROR("Expecting VAR");
         return false;
     }
@@ -184,11 +184,11 @@ bool var(program** prog)
 bool ltr(program** prog, bool isvar)
 {
     int len = strlen((*prog)->word);
-    if(len > 2){
+    if(len > VAR_LEN){
             ERROR("Expecting LTR (string too long)");
             return false;
     }
-    if(isvar && len == 2){
+    if(isvar && len == VAR_LEN){
         if(!isupper((*prog)->word[1])){
             ERROR("Expecting LTR");
             return false;
@@ -226,7 +226,7 @@ bool items(program** prog)
 
 bool item(program** prog)
 {
-    if((*prog)->word[0] == '"'){
+    if((*prog)->word[0] == WORD){
         return word(prog);
     }else{
         return varnum(prog);
@@ -235,9 +235,9 @@ bool item(program** prog)
 
 bool varnum(program** prog)
 {
-    if((*prog)->word[0] == '$'){
+    if((*prog)->word[0] == VAR){
         return var(prog);
-    }else if(isdigit((*prog)->word[0]) || (*prog)->word[0] == '-'){
+    }else if(isdigit((*prog)->word[0]) || (*prog)->word[0] == NEGATIVE){
         return num(prog);
     }else{
         ERROR("Expecting VARNUM");
@@ -315,7 +315,7 @@ bool op(program** prog)
 bool word(program** prog)
 {
     int len = strlen((*prog)->word);
-    if((*prog)->word[0] != '"' || (*prog)->word[(len - 1)] != '"'){
+    if((*prog)->word[0] != WORD || (*prog)->word[(len - 1)] != WORD){
         ERROR("Expecting WORD");
         return false;
     }
