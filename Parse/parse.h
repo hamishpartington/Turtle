@@ -11,7 +11,7 @@
 
 #define LONGEST_WORD 20
 #define NUM_ARGS 2
-#define PRODUCTION 0
+#define PRODUCTION 1
 #define FORWARD 'F'
 #define RIGHT 'R'
 #define VAR_LEN 2
