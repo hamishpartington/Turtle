@@ -5,6 +5,8 @@ repo1="../Results"
 repo2="../Neill_Results"
 LOG_FILE="comp_pdf_out.txt"
 
+cat /dev/null > $LOG_FILE
+
 exec 3>&1 1>>${LOG_FILE} 2>&1
 
 # Loop through all files in repo1

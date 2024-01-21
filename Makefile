@@ -81,4 +81,4 @@ run: all
 	./interp TTLs/downarrow.ttl out_downarrow.ps
 
 clean:
-	rm -f parse_s interp_s parse interp parse_v interp_v Results/out_*.txt Results/out_*.ps Results/out_*.pdf
+	rm -f parse_s interp_s parse interp parse_v interp_v Results/out_*.txt Results/out_*.ps Results/out_*.pdf turtle.zip

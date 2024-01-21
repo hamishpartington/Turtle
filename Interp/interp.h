@@ -38,7 +38,7 @@
 #define MAX_EXT 4
 #define MAX_DIR 100
 #define PDF_LEN 4
-#define PRODUCTION 0
+#define PRODUCTION 1
 #define FORWARD 'F'
 #define RIGHT 'R'
 #define VAR_LEN 2
