@@ -25,7 +25,7 @@
 #define SIDELENGTH 10
 #define RGB_DARK_GREEN 1,50,32
 #define MAX_POINTS 1000
-#define MOVE_DIST 20
+#define MOVE_DIST 40
 #define PI 3.14159265
 #define SEMI_CIRC 180
 #define RAD PI/SEMI_CIRC

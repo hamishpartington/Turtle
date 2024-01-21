@@ -17,7 +17,10 @@ int main (int argc, char** argv)
         char system_command[MAX_COMMAND];
         strcpy(system_command, "./interp Extension/SDL_output.ttl ");
         strcat(system_command, argv[1]);
-        system(system_command);
+            if(system(system_command) == -1){
+                fprintf(stderr, "system() call failed\n");
+                return EXIT_FAILURE;
+            }
     }
 
     return EXIT_SUCCESS;
@@ -105,24 +108,48 @@ lines* init_lines(void)
 
 SDL_Rect move_turtle(lines **l, int key_inp, SDL_Rect turtle)
 {   
+    double x, y;
     if(key_inp == SDLK_UP){
-        advance_line(l);
-        set_prev_values(l);
-        (*l)->x = new_x(*l, -MOVE_DIST);
-        (*l)->y = new_y(*l, -MOVE_DIST);
-        turtle.y = (*l)->y;
-        turtle.x = (*l)->x;
-        strcpy((*l)->instruct, "FORWARD");
-        (*l)->val = 1;
+        //to make sure line advance if start
+        if(strsame((*l)->instruct, "START")){
+            advance_line(l);
+            set_prev_values(l);
+            strcpy((*l)->instruct, "FORWARD");
+            (*l)->val = 0;
+        }
+        x = new_x(*l, -MOVE_DIST);
+        y = new_y(*l, -MOVE_DIST);
+        // so turtle does not move out of bounds
+        if(!(x > WIDTH || x < 0 || y > HEIGHT || y < 0)){
+            advance_line(l);
+            set_prev_values(l);
+            (*l)->x = x;
+            (*l)->y = y;
+            turtle.y = (*l)->y;
+            turtle.x = (*l)->x;
+            strcpy((*l)->instruct, "FORWARD");
+            (*l)->val = 1;
+        }
     }else if (key_inp == SDLK_DOWN){
-        advance_line(l);
-        set_prev_values(l);
-        (*l)->x = new_x(*l, MOVE_DIST);
-        (*l)->y = new_y(*l, MOVE_DIST);
-        turtle.y = (*l)->y;
-        turtle.x = (*l)->x;
-        strcpy((*l)->instruct, "FORWARD");
-        (*l)->val = -1;
+        if(strsame((*l)->instruct, "START")){
+            advance_line(l);
+            set_prev_values(l);
+            strcpy((*l)->instruct, "FORWARD");
+            (*l)->val = 0;
+        }
+        x = new_x(*l, MOVE_DIST);
+        y = new_y(*l, MOVE_DIST);
+        // so turtle does not move out of bounds
+        if(!(x > WIDTH || x < 0 || y > HEIGHT || y < 0)){
+            advance_line(l);
+            set_prev_values(l);
+            (*l)->x = x;
+            (*l)->y = y;
+            turtle.y = (*l)->y;
+            turtle.x = (*l)->x;
+            strcpy((*l)->instruct, "FORWARD");
+            (*l)->val = -1;
+        }
     }else if (key_inp == SDLK_LEFT){
         advance_line(l);
         set_prev_values(l);
@@ -211,12 +238,6 @@ double new_y(lines* l, double n)
     }else{
         new_y = l->previous->y - adjacent(n, (l->facing - THREE_HALF_PI));
     }
-    if(new_y > HEIGHT){
-        return (new_y - HEIGHT);
-    }
-    if(new_y < 0){
-        return (new_y + HEIGHT);
-    }
     return new_y;
 }
 
@@ -231,13 +252,6 @@ double new_x(lines* l, double n)
         new_x = l->previous->x + adjacent(n, (l->facing - PI));
     }else{
         new_x = l->previous->x - opposite(n, (l->facing - THREE_HALF_PI));
-    }
-
-    if(new_x > WIDTH){
-        return (new_x - WIDTH);
-    }
-    if(new_x < 0){
-        return (new_x + WIDTH);
     }
 
     return new_x;
