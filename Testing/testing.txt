@@ -22,7 +22,8 @@ scripts, I can check if each function is working as expected.
 As with the parser, I carried out assert testing where possible and also wrote 
 some test .ttl scripts designed to crash the interpreter but not the parser to 
 ensure additional interpreting fucntionality not already tested in the parser was 
-behaving as expected.
+behaving as expected. I used stack functions from Neill's github so assumed these
+didn't need testing.
 
 ///Changes made
     -Realised that I needed to have a function to jump to the end of a loop if

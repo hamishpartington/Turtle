@@ -67,7 +67,10 @@ bool output_func(int argc, turtle* t_start, char** argv)
             strcat(system_command, " ");
             ps_to_pdf(out_dir);
             strcat(system_command, out_dir);
-            system(system_command);
+            if(system(system_command) == -1){
+                ERROR("system() call failed");
+                return false;
+            }
             return true;
         }else{
             fprintf(stderr, "%s is not a valid output file type\n", file_ext);
@@ -914,7 +917,9 @@ void ps_to_pdf(char fname[MAX_DIR])
 
 void buff_reset(char buffer[BUFSIZ])
 {
-    freopen("NUL", "a", stdout);
+    if(freopen("NUL", "a", stdout) == NULL){
+        fprintf(stderr, "Unable to redirect stdout\n");
+    }
     memset(buffer, 0, BUFSIZ);
     setvbuf(stdout, buffer, _IOFBF, BUFSIZ);
 }
@@ -990,29 +995,58 @@ void test(void)
     char buffer[BUFSIZ];
     fflush(stdout);
     int stdout_save = dup(STDOUT_FILENO);
-    freopen("NUL", "a", stdout);
-    setvbuf(stdout, buffer, _IOFBF, BUFSIZ);
+    buff_reset(buffer);
 
-    assert(calc_pfix(pfix_result, "23", "12", '+'));
+    char v1[MAX_PFIX], v2[MAX_PFIX];
+    strcpy(v1, "24");
+    strcpy(v2, "12");
+
+    assert(calc_pfix(pfix_result, v1, v2, '+'));
     x = atoi(pfix_result);
-    assert(x == 35);
-    assert(calc_pfix(pfix_result, "23", "12", '-'));
+    assert(x == 36);
+    assert(calc_pfix(pfix_result, v1, v2, '-'));
     x = atoi(pfix_result);
-    assert(x == 11);
-    assert(calc_pfix(pfix_result, "24", "12", '/'));
+    assert(x == 12);
+    assert(calc_pfix(pfix_result, v1, v2, '/'));
     x = atoi(pfix_result);
     assert(x == 2);
-    assert(calc_pfix(pfix_result, "23", "12", '*'));
+    assert(calc_pfix(pfix_result, v1, v2, '*'));
     x = atoi(pfix_result);
-    assert(x == 276);
-    assert(!calc_pfix(pfix_result, "23", "12", '>'));
+    assert(x == 288);
+    assert(!calc_pfix(pfix_result, v1, v2, '>'));
     assert(strsame(buffer, 
     "Can't understand that operator: >\n"));
     buff_reset(buffer);
     assert(strsame(buffer, ""));
 
+    //test init_turtle
+    turtle* t = NULL, *t_start;
+    assert(!set_var('A', v1, &t));
+    t = init_turtle();
+    t_start = t;
+    assert(t != NULL);
+    assert(t->colour == WHITE);
+    assert(t->column == START_COLUMN);
+    assert(t->row == START_ROW);
+    assert(set_var('A', v1, &t));
+    assert(set_var('D', v1, &t));
+    //test advance_turtle
+    advance_turtle(&t);
+    assert(t->previous->colour == WHITE);
+    assert(t->previous->column == START_COLUMN);
+    assert(t->previous->row == START_ROW);
+    //test set_prev_values
+    set_prev_values(&t);
+    assert(t->colour == WHITE);
+    assert(t->column == START_COLUMN);
+    assert(t->row == START_ROW);
+    assert(strsame(t->variables[0], v1));
+    assert(strsame(t->variables[3], v1));
 
-    turtle* t, *t_start;
+    assert(turtle_free(t_start));   
+
+
+   
     //fail var_get
     FILE* f = fopen("TTLs/ok_parse_fail_interp.ttl", "r");
     p = build_program(f);
@@ -1100,11 +1134,23 @@ void test(void)
     assert(turtle_free(t_start));
     fclose(f);
 
+/*TODO Testing
+    - output_func
+    - check for end of lst?
+    -deg _to_radians
 
 
+*/
+    assert(in_bounds(1, 1));
+    assert(!in_bounds(HEIGHT+1, 1));
+    assert(!in_bounds(1, WIDTH+1));
+    assert(!in_bounds(-1, 1));
+    assert(!in_bounds(1, -1));
 
     //restore stdout
-    freopen("NUL", "a", stdout);
+    if(freopen("NUL", "a", stdout) == NULL){
+        fprintf(stderr, "Unable to redirect stdout\n");
+    }
     dup2(stdout_save, STDOUT_FILENO);
     setvbuf(stdout, NULL, _IOFBF, BUFSIZ);
 

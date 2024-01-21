@@ -352,7 +352,9 @@ bool check_for_loop_end(program* prog){
 
 void buff_reset(char buffer[BUFSIZ])
 {
-    freopen("NUL", "a", stdout);
+    if(freopen("NUL", "a", stdout) == NULL){
+        fprintf(stderr, "Unable to redirect stdout\n");
+    }
     memset(buffer, 0, BUFSIZ);
     setvbuf(stdout, buffer, _IOFBF, BUFSIZ);
 }
@@ -368,8 +370,7 @@ void test(void)
     char buffer[BUFSIZ];
     fflush(stdout);
     int stdout_save = dup(STDOUT_FILENO);
-    freopen("NUL", "a", stdout);
-    setvbuf(stdout, buffer, _IOFBF, BUFSIZ);
+    buff_reset(buffer);
 
     strcpy(p->word, "NOT_START");
     assert(!prog(&p));
@@ -581,7 +582,9 @@ void test(void)
     assert(!build_program(NULL));
 
     //restore stdout
-    freopen("NUL", "a", stdout);
+    if(freopen("NUL", "a", stdout) == NULL){
+        fprintf(stderr, "Unable to redirect stdout\n");
+    }
     dup2(stdout_save, STDOUT_FILENO);
     setvbuf(stdout, NULL, _IOFBF, BUFSIZ);
 }
