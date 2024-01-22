@@ -66,7 +66,7 @@ int SDL_display_turtle(lines* start)
             if(e.type == SDL_QUIT){
                 quit = true;
             }
-            if(e.type == SDL_KEYDOWN){
+            if(e.type == SDL_KEYDOWN || e.type == SDL_KEYUP){
                 turtle = move_turtle(&l, e.key.keysym.sym, turtle);
             }
         SDL_SetRenderDrawColor(renderer, RGB_DARK_GREEN, OPAQUE);

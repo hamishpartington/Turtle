@@ -1134,13 +1134,6 @@ void test(void)
     assert(turtle_free(t_start));
     fclose(f);
 
-/*TODO Testing
-    - output_func
-    - check for end of lst?
-    -deg _to_radians
-
-
-*/
     assert(in_bounds(1, 1));
     assert(!in_bounds(HEIGHT+1, 1));
     assert(!in_bounds(1, WIDTH+1));
@@ -1153,6 +1146,5 @@ void test(void)
     }
     dup2(stdout_save, STDOUT_FILENO);
     setvbuf(stdout, NULL, _IOFBF, BUFSIZ);
-
 
 }
