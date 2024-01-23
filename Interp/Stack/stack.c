@@ -32,6 +32,7 @@ void stack_push(stack* s, char data[MAX_PFIX])
 bool stack_pop(stack* s, char* d)
 {
    if((s==NULL) || (s->start==NULL)){
+      STACK_ERROR("Stack underflow due to invalid postfix expression");
       return false;
    }
 

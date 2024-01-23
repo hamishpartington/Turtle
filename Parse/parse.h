@@ -6,15 +6,22 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include <assert.h>
+#include <unistd.h>
 
 #define LONGEST_WORD 20
 #define NUM_ARGS 2
+#define PRODUCTION 1
+#define FORWARD 'F'
+#define RIGHT 'R'
+#define VAR_LEN 2
+#define VAR '$'
+#define WORD '"'
+#define NEGATIVE '-'
 
 #define strsame(A, B) (strcmp(A, B) == 0)
-#define ERROR(PHRASE) { fprintf(stderr, \
-        "Fatal Error %s occurred in %s, line %d\n", PHRASE, \
-        __FILE__, __LINE__); \
-        exit(EXIT_FAILURE); }
+#define ERROR(PHRASE) { fprintf(stdout, \
+        "Parsing Error: %s occurred in %s function\n", PHRASE, __func__); }
 
 struct program {
     char word[LONGEST_WORD];
@@ -22,6 +29,10 @@ struct program {
 };
 
 typedef struct program program;
+
+program* build_program(FILE* f);
+
+void test(void);
 
 //Stolen from Neill (https://github.com/csnwc/ADTs/blob/main/General/general.c)
 void* neill_calloc(int n, size_t size);
@@ -42,7 +53,7 @@ bool col(program** prog);
 
 bool loop(program** prog);
 
-bool ltr(program** prog);
+bool ltr(program** prog, bool isvar);
 
 bool var(program** prog);
 
@@ -65,3 +76,8 @@ bool word(program** prog);
 bool isop(program** prog);
 
 bool op(program** prog);
+
+bool check_for_loop_end(program* prog);
+
+void buff_reset(char buffer[BUFSIZ]);
+

@@ -7,15 +7,14 @@ int main (int argc, char** argv)
         exit(EXIT_FAILURE);
     }
 
+    if(!PRODUCTION){
+        test();
+    }
+
     FILE* f = fopen(argv[1], "r");
     program *start, *p;
-    start = (program*)neill_calloc(1, sizeof(program));
-    p = start;
 
-    while(fscanf(f, "%s", p->word) != EOF){
-        p->next = (program*)neill_calloc(1, sizeof(program));
-        p = p->next;
-    }
+    start = build_program(f);
     p = start;
 
     bool pass = prog(&p);
@@ -28,6 +27,23 @@ int main (int argc, char** argv)
         return EXIT_SUCCESS;
     }
     return EXIT_FAILURE;
+}
+
+program* build_program(FILE* f)
+{
+    if(!f){
+        ERROR("Input NULL FILE pointer");
+        return NULL;
+    }
+    program *start, *p;
+    start = (program*)neill_calloc(1, sizeof(program));
+    p = start;
+
+    while(fscanf(f, "%s", p->word) != EOF){
+        p->next = (program*)neill_calloc(1, sizeof(program));
+        p = p->next;
+    }
+    return start;
 }
 
 void* neill_calloc(int n, size_t size)
@@ -63,7 +79,7 @@ bool prog(program** prog)
 {
     if(!strsame((*prog)->word, "START")){
         ERROR("No START statement");
-        return false; 
+        return false;
     }
     *prog = (*prog)->next;
     return inlist(prog);
@@ -73,6 +89,11 @@ bool inlist(program** prog)
 {
     if(strsame((*prog)->word, "END")){
         return true;
+    }
+    //catch programs with no end
+    if((*prog)->next == NULL && !strsame((*prog)->word, "END")){
+        ERROR("No end to program");
+        return false;
     }
     if(!ins(prog)){
         return false;
@@ -115,9 +136,9 @@ bool rgt(program** prog)
 bool col(program** prog)
 {
     *prog = (*prog)->next;
-    if((*prog)->word[0] == '$'){
+    if((*prog)->word[0] == VAR){
         return var(prog);
-    }else if((*prog)->word[0] == '"'){
+    }else if((*prog)->word[0] == WORD){
         return word(prog);
     }else{
         ERROR("Expecting COL");
@@ -128,7 +149,7 @@ bool col(program** prog)
 bool loop(program** prog)
 {
     *prog = (*prog)->next;
-    if(!ltr(prog)){
+    if(!ltr(prog, false)){
         return false;
     }
     *prog = (*prog)->next;
@@ -141,22 +162,33 @@ bool loop(program** prog)
         return false;
     }
     *prog = (*prog)->next;
+    
+    bool pass = check_for_loop_end(*prog);
+    if(!pass){
+        return false;
+    }
+
     return inlist(prog);
 }
 
 bool var(program** prog)
 {
-    if((*prog)->word[0] != '$'){
+    if((*prog)->word[0] != VAR){
         ERROR("Expecting VAR");
         return false;
     }
-    return ltr(prog);
+    return ltr(prog, true);
 
 }
 
-bool ltr(program** prog)
+bool ltr(program** prog, bool isvar)
 {
-    if((*prog)->word[0] == '$'){
+    int len = strlen((*prog)->word);
+    if(len > VAR_LEN){
+            ERROR("Expecting LTR (string too long)");
+            return false;
+    }
+    if(isvar && len == VAR_LEN){
         if(!isupper((*prog)->word[1])){
             ERROR("Expecting LTR");
             return false;
@@ -194,7 +226,7 @@ bool items(program** prog)
 
 bool item(program** prog)
 {
-    if((*prog)->word[0] == '"'){
+    if((*prog)->word[0] == WORD){
         return word(prog);
     }else{
         return varnum(prog);
@@ -203,9 +235,9 @@ bool item(program** prog)
 
 bool varnum(program** prog)
 {
-    if((*prog)->word[0] == '$'){
+    if((*prog)->word[0] == VAR){
         return var(prog);
-    }else if(isdigit((*prog)->word[0]) || (*prog)->word[0] == '-'){
+    }else if(isdigit((*prog)->word[0]) || (*prog)->word[0] == NEGATIVE){
         return num(prog);
     }else{
         ERROR("Expecting VARNUM");
@@ -228,7 +260,7 @@ bool num(program** prog)
 bool set(program** prog)
 {
     *prog = (*prog)->next;
-    if(!ltr(prog)){
+    if(!ltr(prog, false)){
         return false;
     }
     *prog = (*prog)->next;
@@ -283,22 +315,279 @@ bool op(program** prog)
 bool word(program** prog)
 {
     int len = strlen((*prog)->word);
-    if((*prog)->word[0] != '"' || (*prog)->word[(len - 1)] != '"'){
+    if((*prog)->word[0] != WORD || (*prog)->word[(len - 1)] != WORD){
         ERROR("Expecting WORD");
         return false;
     }
     return true;
 }
 
+bool check_for_loop_end(program* prog){
+    int offset = 0;
+    while(!strsame(prog->word, "END") || offset != 0){
+        if(strsame(prog->word, "")){
+            ERROR("LOOP has no END");
+            return false;
+        }
+        if(strsame(prog->word, "LOOP")){
+            offset++;
+        }
+        prog = prog->next;
+        if(strsame(prog->word, "END") && strsame(prog->next->word, "")){
+            ERROR("LOOP has no END");
+            return false;
+        }
+        if(strsame(prog->word, "END") && offset > 0){
+            offset--;
+            prog = prog->next;
+        }
+        if(strsame(prog->word, "END") && strsame(prog->next->word, "")){
+            ERROR("LOOP has no END");
+            return false;
+        }
+    }
+    return true;
+}
 
 
+void buff_reset(char buffer[BUFSIZ])
+{
+    if(freopen("NUL", "a", stdout) == NULL){
+        fprintf(stderr, "Unable to redirect stdout\n");
+    }
+    memset(buffer, 0, BUFSIZ);
+    setvbuf(stdout, buffer, _IOFBF, BUFSIZ);
+}
+
+void test(void)
+{
+    program* start, *p = NULL;
+
+    assert(!prog_free(p));
+    p = (program*)neill_calloc(1, sizeof(program));
+
+    //code to redirect stdout to buffer so error messages can be tested
+    char buffer[BUFSIZ];
+    fflush(stdout);
+    int stdout_save = dup(STDOUT_FILENO);
+    buff_reset(buffer);
+
+    strcpy(p->word, "NOT_START");
+    assert(!prog(&p));
+    assert(strsame(buffer, 
+    "Parsing Error: No START statement occurred in prog function\n"));
+    //need to reset buffer before each test
+    buff_reset(buffer);
+    assert(strsame(buffer, ""));
+
+    //testing num
+    assert(!num(&p));
+    assert(strsame(buffer, 
+    "Parsing Error: Expecting NUM occurred in num function\n"));
+    buff_reset(buffer);
+    strcpy(p->word, "101.3");
+    assert(num(&p));
+
+    // testing var
+    assert(!var(&p));
+    assert(strsame(buffer, 
+    "Parsing Error: Expecting VAR occurred in var function\n"));
+    buff_reset(buffer);
+    strcpy(p->word, "$C");
+    assert(var(&p));
+
+    // testing word
+    assert(!word(&p));
+    assert(strsame(buffer, 
+    "Parsing Error: Expecting WORD occurred in word function\n"));
+    buff_reset(buffer);
+    strcpy(p->word, "\"$C");
+    assert(!word(&p));
+    assert(strsame(buffer, 
+    "Parsing Error: Expecting WORD occurred in word function\n"));
+    buff_reset(buffer);
+    strcpy(p->word, "$C\"");
+    assert(!word(&p));
+    assert(strsame(buffer, 
+    "Parsing Error: Expecting WORD occurred in word function\n"));
+    buff_reset(buffer);
+    strcpy(p->word, "\"$C\"");
+    assert(word(&p));
+
+    //testing isop (also tests op)
+    strcpy(p->word, "-");
+    assert(isop(&p));
+    strcpy(p->word, "+");
+    assert(isop(&p));
+    strcpy(p->word, "*");
+    assert(isop(&p));
+    strcpy(p->word, "/");
+    assert(isop(&p));
+    strcpy(p->word, ".");
+    assert(!isop(&p));
+
+    assert(prog_free(p));
 
 
+    //testing no start
+    FILE* f = fopen("Testing/Test_TTLs/no_start.ttl", "r");
+    p = build_program(f);
+    start = p;
 
+    assert(!prog(&p));
+    assert(strsame(buffer, 
+    "Parsing Error: No START statement occurred in prog function\n"));
+    buff_reset(buffer);
+    assert(prog_free(start));
+    fclose(f);
 
+    //testing no end
+    f = fopen("Testing/Test_TTLs/no_end.ttl", "r");
+    p = build_program(f);
+    start = p;
+    assert(!prog(&p));
+    assert(strsame(buffer, 
+    "Parsing Error: No end to program occurred in inlist function\n"));
+    buff_reset(buffer);
+    assert(prog_free(start));
+    fclose(f);
 
+    //testing ins
+    f = fopen("Testing/Test_TTLs/fail_ins.ttl", "r");
+    p = build_program(f);
+    start = p;
+    assert(!prog(&p));
+    assert(strsame(buffer, 
+    "Parsing Error: Expecting INS occurred in ins function\n"));
+    buff_reset(buffer);
+    assert(prog_free(start));
+    fclose(f);
 
+    //testing col
+    f = fopen("Testing/Test_TTLs/fail_col1.ttl", "r");
+    p = build_program(f);
+    start = p;
+    assert(!prog(&p));
+    assert(strsame(buffer, 
+    "Parsing Error: Expecting COL occurred in col function\n"));
+    buff_reset(buffer);
+    assert(prog_free(start));
+    fclose(f);
 
+    f = fopen("Testing/Test_TTLs/fail_col2.ttl", "r");
+    p = build_program(f);
+    start = p;
+    assert(!prog(&p));
+    assert(strsame(buffer, 
+    "Parsing Error: Expecting COL occurred in col function\n"));
+    buff_reset(buffer);
+    assert(prog_free(start));
+    fclose(f);
+
+    //testing loop
+    f = fopen("Testing/Test_TTLs/fail_loop.ttl", "r");
+    p = build_program(f);
+    start = p;
+    assert(!prog(&p));
+    assert(strsame(buffer, 
+    "Parsing Error: Expecting OVER occurred in loop function\n"));
+    buff_reset(buffer);
+    assert(prog_free(start));
+    fclose(f);
+
+    //testing ltr
+    f = fopen("Testing/Test_TTLs/fail_ltr1.ttl", "r");
+    p = build_program(f);
+    start = p;
+    assert(!prog(&p));
+    assert(strsame(buffer, 
+    "Parsing Error: Expecting LTR (string too long) occurred in ltr function\n"));
+    buff_reset(buffer);
+    assert(prog_free(start));
+    fclose(f);
+    f = fopen("Testing/Test_TTLs/fail_ltr2.ttl", "r");
+    p = build_program(f);
+    start = p;
+    assert(!prog(&p));
+    assert(strsame(buffer, 
+    "Parsing Error: Expecting LTR occurred in ltr function\n"));
+    buff_reset(buffer);
+    assert(prog_free(start));
+    fclose(f);
+    f = fopen("Testing/Test_TTLs/fail_ltr3.ttl", "r");
+    p = build_program(f);
+    start = p;
+    assert(!prog(&p));
+    assert(strsame(buffer, 
+    "Parsing Error: Expecting LTR occurred in ltr function\n"));
+    buff_reset(buffer);
+    assert(prog_free(start));
+    fclose(f);
+
+    //testing lst
+    f = fopen("Testing/Test_TTLs/fail_lst.ttl", "r");
+    p = build_program(f);
+    start = p;
+    assert(!prog(&p));
+    assert(strsame(buffer, 
+    "Parsing Error: Expecting { for LST occurred in lst function\n"));
+    buff_reset(buffer);
+    assert(prog_free(start));
+    fclose(f);
+
+    //testing varnum
+    f = fopen("Testing/Test_TTLs/fail_varnum.ttl", "r");
+    p = build_program(f);
+    start = p;
+    assert(!prog(&p));
+    assert(strsame(buffer, 
+    "Parsing Error: Expecting VARNUM occurred in varnum function\n"));
+    buff_reset(buffer);
+    assert(prog_free(start));
+    fclose(f);
+
+    //testing set
+    f = fopen("Testing/Test_TTLs/fail_set.ttl", "r");
+    p = build_program(f);
+    start = p;
+    assert(!prog(&p));
+    assert(strsame(buffer, 
+    "Parsing Error: Expecting SET occurred in set function\n"));
+    buff_reset(buffer);
+    assert(prog_free(start));
+    fclose(f);
+
+    //testing pfix
+    f = fopen("Testing/Test_TTLs/fail_pfix.ttl", "r");
+    p = build_program(f);
+    start = p;
+    assert(!prog(&p));
+    assert(strsame(buffer, 
+    "Parsing Error: Expecting VARNUM occurred in varnum function\n"));
+    buff_reset(buffer);
+    assert(prog_free(start));
+    fclose(f);
+
+    //testing item
+    f = fopen("Testing/Test_TTLs/fail_item.ttl", "r");
+    p = build_program(f);
+    start = p;
+    assert(!prog(&p));
+    assert(strsame(buffer, 
+    "Parsing Error: Expecting VARNUM occurred in varnum function\n"));
+    buff_reset(buffer);
+    assert(prog_free(start));
+    fclose(f);
+
+    assert(!build_program(NULL));
+
+    //restore stdout
+    if(freopen("NUL", "a", stdout) == NULL){
+        fprintf(stderr, "Unable to redirect stdout\n");
+    }
+    dup2(stdout_save, STDOUT_FILENO);
+    setvbuf(stdout, NULL, _IOFBF, BUFSIZ);
+}
 
 
 

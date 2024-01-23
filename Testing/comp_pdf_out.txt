@@ -1,0 +1,166 @@
+../Results/out_5x5.pdf: No differences detected.
+../Results/out_donothing.pdf: No differences detected.
+../Results/out_downarrow.pdf: No differences detected.
+../Results/out_empty.pdf: No differences detected.
+../Results/out_fail_parse_ok_interp.pdf: No differences detected.
+../Results/out_forward.pdf: No differences detected.
+../Results/out_hypno.pdf: No differences detected.
+../Results/out_labyrinth.pdf: No differences detected.
+../Results/out_octagon1.pdf: No differences detected.
+../Results/out_octagon2.pdf: No differences detected.
+../Results/out_set1.pdf: No differences detected.
+../Results/out_set2.pdf: No differences detected.
+../Results/out_spiral.pdf: No differences detected.
+../Results/out_tunnel.pdf: No differences detected.
+../Results/out_turn.pdf: No differences detected.
+../Results/out_5x5.txt: 12,21c12,21
+<                       YYYG YCC                     
+<                      GY GCCCYYC                    
+<                      GYG CG YMMC                   
+<                      GY  CMMMRCM                   
+<                      GYY CMY CRMM                  
+<                      GR YCM CC CM                  
+<                      GG  GMCCRCC M                 
+<                       RGGGMMR C M                  
+<                          MRRMM MM                  
+<                           MMM  M                   
+---
+>                       YYY  CCC                     
+>                      GY GCCYRYC                    
+>                      GYG CG MMMC                   
+>                      GY  CMM RCM                   
+>                      GYYYCMY CR M                  
+>                      GR  CM  C CM                  
+>                      GGG  MCC C  M                 
+>                       RRGGMMR C M                  
+>                          MMRMM M                   
+>                            MM  M                   
+33a34
+> 
+../Results/out_donothing.txt: 33a34
+> 
+../Results/out_downarrow.txt: 20,23c20,23
+<                         W       W                  
+<                          W     W                   
+<                          W     W                   
+<                           W   W                    
+---
+>                         W      W                   
+>                         W      W                   
+>                          W    W                    
+>                          W   W                     
+25c25
+<                            W W                     
+---
+>                           W W                      
+27c27
+<                             W                      
+---
+>                            W                       
+33a34
+> 
+../Results/out_empty.txt: 33a34
+> 
+../Results/out_fail_parse_ok_interp.txt: 33a34
+> 
+../Results/out_forward.txt: 33a34
+> 
+../Results/out_hypno.txt: 7c7
+<                    R      GGGGBB                   
+---
+>                    R      GGGGB B                  
+9,16c9,16
+<                   R  R  GGGG BBBB                  
+<                   R RGGG    B BBBB                 
+<                  R  RRR  GGG BBBBBB                
+<                 RR RR RGG  GB BBBBB                
+<                 R R RR R  GG BB MBBB               
+<              Y R  R RR R G    BMMMBB               
+<              Y R R  RR R R     MM MB               
+<               Y YR R R R R     MMM MM              
+---
+>                   R  R GGGG  BBB B                 
+>                   R RGGG   GB BBBB                 
+>                  R  RRR  GG  B BBBB                
+>                  R RR RGG   B BBBBB                
+>                 R  RR RR  GG BB MBBB               
+>              Y  R R RR R G     MMMBB               
+>              Y R  R RR R R     MM MMB              
+>               Y YR R R R R     MMMM M              
+18,21c18,21
+<                Y Y YY  YYY    CCMMMM               
+<                Y Y Y Y  YYYCCC MMMM                
+<                 Y Y Y Y   YY  CCMM                 
+<                 Y YYYY Y  CCCC MMM                 
+---
+>                Y YY Y  YYY    CCMM M               
+>                Y Y Y Y   YY CCCMMMM                
+>                 Y Y Y Y   YCC CCM M                
+>                 Y Y  Y Y  CCCC MMM                 
+23c23
+<                  Y  Y YCCCC    MM                  
+---
+>                  Y Y  YCCCC    MM                  
+25,26c25,26
+<                   YCCCCC      MM                   
+<                         CCCCCCC                    
+---
+>                   YCCCCCC      M                   
+>                          CCCCCC                    
+33a34
+> 
+../Results/out_labyrinth.txt: 33a34
+> 
+../Results/out_octagon1.txt: 33a34
+> 
+../Results/out_octagon2.txt: 33a34
+> 
+../Results/out_set1.txt: 33a34
+> 
+../Results/out_set2.txt: 33a34
+> 
+../Results/out_spiral.txt: 3c3
+<                 WW                 W               
+---
+>                  W                 W               
+5c5
+<                W                     W             
+---
+>                 W                    W             
+8,9c8,9
+<               W          WWW  W       W            
+<               W      WWWW      W       W           
+---
+>               W         WWWW  W       W            
+>               W      WWW       W       W           
+12,13c12,13
+<             WW     W              W      W         
+<             W     W                W     W         
+---
+>             W      W              W      W         
+>             W     W                W      W        
+15,17c15,18
+<            W      W        W         W    WW       
+<           W       W      WW WW       W      W      
+<           W      W       W   WW     W       W      
+---
+>            W      W       WW         W     W       
+>           W       W      W  WW       W     W       
+>           W      W       W    W     W       W      
+>            W     W            W     W              
+19d19
+<            WW    W            W     W              
+23c23
+<               WW     WW  WWW      W                
+---
+>               W       W  WWW      W                
+27c27
+<                  WW           WWWW                 
+---
+>                  W            WWWW                 
+33a34
+> 
+../Results/out_tunnel.txt: 33a34
+> 
+../Results/out_turn.txt: 33a34
+> 

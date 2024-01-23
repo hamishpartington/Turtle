@@ -1,68 +1,84 @@
 CC=gcc
-COMMON= -Wall -Wextra -Wfloat-equal -Wpedantic -Wvla -std=c99 -Werror
+COMMON= -Wall -Wextra -Wfloat-equal -Wpedantic -Wvla -std=c99 #-Werror
 DEBUG= -g3
 SANITIZE= $(COMMON) -fsanitize=undefined -fsanitize=address $(DEBUG)
 VALGRIND= $(COMMON) $(DEBUG)
 PRODUCTION= $(COMMON) -O3
+SDL= `pkg-config sdl2 --cflags` `pkg-config sdl2 --libs`
 
-all: parse_s interp_s
+all: parse_s interp_s parse interp extension parse_v interp_v
 
 parse_s: Parse/parse.h Parse/parse.c
 	$(CC) Parse/parse.c -o parse_s -I./Parse $(SANITIZE) -lm
 
+parse: Parse/parse.h Parse/parse.c
+	$(CC) Parse/parse.c -o parse -I./Parse $(PRODUCTION) -lm
+
+parse_v: Parse/parse.h Parse/parse.c
+	$(CC) Parse/parse.c -o parse_v -I./Parse $(VALGRIND) -lm
+
 interp_s: Interp/interp.h Interp/interp.c neillsimplescreen.c neillsimplescreen.h Interp/Stack/stack.c Interp/Stack/stack.h
 	$(CC) neillsimplescreen.c Interp/interp.c Interp/Stack/stack.c -o interp_s -I./Interp $(SANITIZE) -lm
 
-### An example : you may wish to adapt this slightly
-extension_s: Extension/extension.h Extension/extension.c neillsimplescreen.c neillsimplescreen.h
-	$(CC) neillsimplescreen.c Extension/extension.c -o extension_s -I./Extension $(SANITIZE) -lm
+interp_v: Interp/interp.h Interp/interp.c neillsimplescreen.c neillsimplescreen.h Interp/Stack/stack.c Interp/Stack/stack.h
+	$(CC) neillsimplescreen.c Interp/interp.c Interp/Stack/stack.c -o interp_v -I./Interp $(VALGRIND) -lm
+
+interp: Interp/interp.h Interp/interp.c neillsimplescreen.c neillsimplescreen.h Interp/Stack/stack.c Interp/Stack/stack.h
+	$(CC) neillsimplescreen.c Interp/interp.c Interp/Stack/stack.c -o interp -I./Interp $(PRODUCTION) -lm
+
+extension: Extension/extension.h Extension/extension.c
+	$(CC) Extension/extension.c -o extension -I./Extension $(PRODUCTION) $(SDL) -lm
+
+# Crete a .zip file using ALL files in this directory
+zip: Parse Interp Extension
+	zip -r turtle.zip Extension Interp Neill_Results Parse Results Testing TTLs grammar.txt neillsimplescreen.c neillsimplescreen.h Makefile 
 
 run: all
-	./parse_s TTLs/empty.ttl
-	./parse_s TTLs/forward.ttl
-	./parse_s TTLs/ok_parse_fail_interp.ttl
-	./parse_s TTLs/set1.ttl
-	./parse_s TTLs/donothing.ttl
-	./parse_s TTLs/set2.ttl
-	./parse_s TTLs/turn.ttl
-	./parse_s TTLs/spiral.ttl
-	./parse_s TTLs/octagon1.ttl
-	./parse_s TTLs/octagon2.ttl
-	./parse_s TTLs/tunnel.ttl
-	./parse_s TTLs/labyrinth.ttl
-	./parse_s TTLs/hypno.ttl
-	./parse_s TTLs/5x5.ttl
-	./parse_s TTLs/downarrow.ttl
-	./interp_s TTLs/empty.ttl out_empty.txt
-	./interp_s TTLs/forward.ttl out_forward.txt
-	./interp_s TTLs/set1.ttl out_set1.txt
-	./interp_s TTLs/donothing.ttl out_donothing.txt
-	./interp_s TTLs/set2.ttl out_set2.txt
-	./interp_s TTLs/turn.ttl out_turn.txt
-	./interp_s TTLs/spiral.ttl out_spiral.txt
-	./interp_s TTLs/octagon1.ttl out_octagon1.txt
-	./interp_s TTLs/octagon2.ttl out_octagon2.txt
-	./interp_s TTLs/tunnel.ttl out_tunnel.txt
-	./interp_s TTLs/labyrinth.ttl out_labyrinth.txt
-	./interp_s TTLs/hypno.ttl out_hypno.txt
-	./interp_s TTLs/5x5.ttl out_5x5.txt
-	./interp_s TTLs/downarrow.ttl out_downarrow.txt
-	./interp_s TTLs/fail_parse_ok_interp.ttl out_fail_parse_ok_interp.txt
-	./interp_s TTLs/empty.ttl out_empty.ps
-	./interp_s TTLs/forward.ttl out_forward.ps
-	./interp_s TTLs/set1.ttl out_set1.ps
-	./interp_s TTLs/donothing.ttl out_donothing.ps
-	./interp_s TTLs/fail_parse_ok_interp.ttl out_fail_parse_ok_interp.ps
-	./interp_s TTLs/set2.ttl out_set2.ps
-	./interp_s TTLs/turn.ttl out_turn.ps
-	./interp_s TTLs/spiral.ttl out_spiral.ps
-	./interp_s TTLs/octagon1.ttl out_octagon1.ps
-	./interp_s TTLs/octagon2.ttl out_octagon2.ps
-	./interp_s TTLs/tunnel.ttl out_tunnel.ps
-	./interp_s TTLs/labyrinth.ttl out_labyrinth.ps
-	./interp_s TTLs/hypno.ttl out_hypno.ps
-	./interp_s TTLs/5x5.ttl out_5x5.ps
-	./interp_s TTLs/downarrow.ttl out_downarrow.ps
+	./parse TTLs/empty.ttl
+	./parse TTLs/forward.ttl
+	./parse TTLs/ok_parse_fail_interp.ttl
+	./parse TTLs/set1.ttl
+	./parse TTLs/donothing.ttl
+	./parse TTLs/set2.ttl
+	./parse TTLs/turn.ttl
+	./parse TTLs/spiral.ttl
+	./parse TTLs/octagon1.ttl
+	./parse TTLs/octagon2.ttl
+	./parse TTLs/tunnel.ttl
+	./parse TTLs/labyrinth.ttl
+	./parse TTLs/hypno.ttl
+	./parse TTLs/5x5.ttl
+	./parse TTLs/downarrow.ttl
+	./interp TTLs/empty.ttl out_empty.txt
+	./interp TTLs/forward.ttl out_forward.txt
+	./interp TTLs/set1.ttl out_set1.txt
+	./interp TTLs/donothing.ttl out_donothing.txt
+	./interp TTLs/set2.ttl out_set2.txt
+	./interp TTLs/turn.ttl out_turn.txt
+	./interp TTLs/spiral.ttl out_spiral.txt
+	./interp TTLs/octagon1.ttl out_octagon1.txt
+	./interp TTLs/octagon2.ttl out_octagon2.txt
+	./interp TTLs/tunnel.ttl out_tunnel.txt
+	./interp TTLs/labyrinth.ttl out_labyrinth.txt
+	./interp TTLs/hypno.ttl out_hypno.txt
+	./interp TTLs/5x5.ttl out_5x5.txt
+	./interp TTLs/downarrow.ttl out_downarrow.txt
+	./interp TTLs/fail_parse_ok_interp.ttl out_fail_parse_ok_interp.txt
+	./interp TTLs/empty.ttl out_empty.ps
+	./interp TTLs/forward.ttl out_forward.ps
+	./interp TTLs/set1.ttl out_set1.ps
+	./interp TTLs/donothing.ttl out_donothing.ps
+	./interp TTLs/fail_parse_ok_interp.ttl out_fail_parse_ok_interp.ps
+	./interp TTLs/set2.ttl out_set2.ps
+	./interp TTLs/turn.ttl out_turn.ps
+	./interp TTLs/spiral.ttl out_spiral.ps
+	./interp TTLs/octagon1.ttl out_octagon1.ps
+	./interp TTLs/octagon2.ttl out_octagon2.ps
+	./interp TTLs/tunnel.ttl out_tunnel.ps
+	./interp TTLs/labyrinth.ttl out_labyrinth.ps
+	./interp TTLs/hypno.ttl out_hypno.ps
+	./interp TTLs/5x5.ttl out_5x5.ps
+	./interp TTLs/downarrow.ttl out_downarrow.ps
 
 clean:
-	rm -f parse_s interp_s Results/out_*.txt Results/out_*.ps Results/out_*.pdf
+	rm -f parse_s interp_s parse interp parse_v interp_v extension Results/out_*.txt Results/out_*.ps Results/out_*.pdf turtle.zip

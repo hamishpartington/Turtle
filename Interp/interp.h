@@ -6,6 +6,8 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include <assert.h>
+#include <unistd.h>
 #include "./Stack/stack.h"
 
 #define LONGEST_WORD 20
@@ -35,14 +37,35 @@
 #define LINEWIDTH 0.2
 #define MAX_EXT 4
 #define MAX_DIR 100
-#define PDF_LEN 3
-
+#define PDF_LEN 4
+#define PRODUCTION 1
+#define FORWARD 'F'
+#define RIGHT 'R'
+#define VAR_LEN 2
+#define VAR '$'
+#define WORD '"'
+#define NEGATIVE '-'
+#define TWO_PI 2*PI
+#define HALF_PI PI/2
+#define THREE_HALF_PI PI*1.5
+#define BLUE 'B'
+#define BLACK 'K'
+#define RED 'R'
+#define CYAN 'C'
+#define GREEN 'G'
+#define MAGENTA 'M'
+#define YELLOW 'Y'
+#define WHITE 'W'
+#define ADD '+'
+#define MULTIPLY '*'
+#define DIVIDE '/'
+#define SQUARE 2
+#define EXT '.'
 
 #define strsame(A, B) (strcmp(A, B) == 0)
-#define ERROR(PHRASE) { fprintf(stderr, \
-        "Fatal Error %s occurred in %s, line %d\n", PHRASE, \
-        __FILE__, __LINE__); \
-        exit(EXIT_FAILURE); }
+#define ERROR(PHRASE) { fprintf(stdout, \
+        "Interpretor Error: %s occurred in %s function\n", PHRASE, \
+        __func__);}
 
 struct program {
     char word[LONGEST_WORD];
@@ -67,6 +90,11 @@ typedef struct turtle turtle;
 
 //Stolen from Neill (https://github.com/csnwc/ADTs/blob/main/General/general.c)
 
+void test(void);
+
+bool output_func(int argc, turtle* t_start, char** argv);
+
+program* build_program(FILE* f);
 
 bool prog_free(program* start);
 
@@ -84,7 +112,7 @@ bool col(program** prog, turtle** t);
 
 bool loop(program** prog, turtle** t);
 
-bool ltr(program** prog);
+bool ltr(program** prog, bool isvar);
 
 bool var(program** prog, turtle** t);
 
@@ -122,7 +150,7 @@ double opposite(double hypotenuse, double theta);
 
 double adjacent(double hypotenuse, double theta);
 
-void turtle_to_array(turtle* t, char array[HEIGHT][WIDTH]);
+void turtle_to_array(turtle* t, char array[HEIGHT][WIDTH], bool console);
 
 void print_to_console(char array[HEIGHT][WIDTH]);
 
@@ -136,7 +164,7 @@ bool turtle_free(turtle* start);
 
 bool set_var(char var, char val[MAX_PFIX], turtle** t);
 
-void calc_pfix(char result[MAX_PFIX], char v1[MAX_PFIX], char v2[MAX_PFIX], char op);
+bool calc_pfix(char result[MAX_PFIX], char v1[MAX_PFIX], char v2[MAX_PFIX], char op);
 
 bool var_get(char var[LONGEST_WORD], turtle** t);
 
@@ -152,10 +180,18 @@ double new_ps_x(turtle* t, double n);
 
 void turtle_to_ps(turtle* t, FILE* ps_output);
 
-void set_ps_colour(char colour, FILE* ps_output);
+bool set_ps_colour(char colour, FILE* ps_output);
 
 bool turtle_moves(turtle* t);
 
 bool get_file_ext(char* fname, char file_ext[MAX_EXT]);
 
 void ps_to_pdf(char fname[MAX_DIR]);
+
+void buff_reset(char buffer[BUFSIZ]);
+
+bool skip_to_loop_end(program** prog);
+
+bool check_for_loop_end(program* prog);
+
+bool in_bounds(int row, int col);
