@@ -2,6 +2,8 @@
 
 This was my final piece of coursework for the C module in my Computer Science MSc. The task was to implement a parser and interpreter for the Turtle language (A language designed to teach people programming) in C. The interpreter can output the result of the input script as a a .txt, .pdf, .ps or in the console using ASCII art depending on the arguments input by the user.
 
+The grammar for Turtle is in grammar.txt and commands for running the program can be found in the Makefile.
+
 ## Extension
 
 I chose to use SDL for my extension. My program allows the user to move the the turtle arround in an SDL window using keyboard inputs:
